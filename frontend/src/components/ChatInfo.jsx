@@ -22,7 +22,7 @@ export default function ChatInfo() {
   ];
 
   return (
-    <div className="bg-white rounded-3xl h-full flex flex-col  overflow-scroll">
+    <div className="bg-white rounded-3xl h-full flex flex-col  overflow-y-scroll">
       {/* Profile */}
       <div className="flex flex-col items-center py-8 px-6">
         <img

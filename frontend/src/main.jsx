@@ -14,6 +14,7 @@ import Signup from "./pages/Signup.jsx";
 import AuthProvider from "./context/AuthContext.jsx";
 import Logout from "./components/Logout.jsx";
 import Messages from "./pages/Messages.jsx";
+import Error from "./pages/Error.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -27,7 +28,8 @@ const router = createBrowserRouter(
         <Route index element={<Home />}></Route>
         <Route path="messages" element={<Messages />} />
       </Route>
-      ,
+      {/* 404 Route - Keep this LAST */}
+      <Route path="*" element={<Error />} />
     </>,
   ),
 );
