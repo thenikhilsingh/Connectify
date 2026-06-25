@@ -12,7 +12,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
-  const { LogoutUser } = useContext(AuthContext);
+  const { LogoutUser, user } = useContext(AuthContext);
   const navigate = useNavigate();
   return (
     <aside className="w-60 h-screen border-r bg-white sticky top-0 flex flex-col">
@@ -76,8 +76,7 @@ export default function Sidebar() {
           />
 
           <div>
-            <h3 className="font-semibold">John Doe</h3>
-            <p className="text-sm text-gray-500">@johndoe</p>
+            <h3 className="font-semibold">{`${user?.firstName} ${user?.lastName}`}</h3>
           </div>
         </div>
       </div>
