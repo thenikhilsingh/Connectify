@@ -1,6 +1,11 @@
 const User = require("../models/user");
+const validationResult = require("../validators/authValidator");
 
 const register = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   try {
     const { firstName, lastName, email, password } = req.body;
 
@@ -29,6 +34,10 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   try {
     const { email, password } = req.body;
 
