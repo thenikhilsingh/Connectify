@@ -13,6 +13,7 @@ import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import AuthProvider from "./context/AuthContext.jsx";
 import Logout from "./components/Logout.jsx";
+import Messages from "./pages/Messages.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -24,6 +25,7 @@ const router = createBrowserRouter(
       {/* App Routes */}
       <Route path="/app" element={<App />}>
         <Route index element={<Home />}></Route>
+        <Route path="messages" element={<Messages />} />
       </Route>
       ,
     </>,

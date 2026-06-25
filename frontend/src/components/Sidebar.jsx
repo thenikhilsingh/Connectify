@@ -37,7 +37,10 @@ export default function Sidebar() {
             Notifications
           </li>
 
-          <li className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer">
+          <li
+            onClick={() => navigate("/app/messages")}
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer"
+          >
             <MessageCircle size={20} />
             Messages
           </li>
