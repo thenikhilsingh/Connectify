@@ -1,6 +1,59 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useState } from "react";
 
 export default function Signup() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const navigate = useNavigate();
+  const [errors, setErrors] = useState([]);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const payload = {
+    firstName: formData.firstName,
+    lastName: formData.lastName,
+    email: formData.email,
+    password: formData.password,
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (formData.password !== formData.confirmPassword) {
+        setErrors((prev) => [...prev, { message: "Passwords do not match" }]);
+        return;
+      }
+      const response = await axios.post(
+        `${API_BASE_URL}/api/auth/signup`,
+        payload,
+      );
+      console.log(response.data);
+      if (response.status === 200) {
+        navigate("/");
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f5f7fb] flex items-center justify-center p-6">
       <div className="bg-white rounded-3xl shadow-lg max-w-6xl w-full grid grid-cols-2 overflow-hidden">
@@ -25,18 +78,24 @@ export default function Signup() {
 
           <p className="text-gray-500 mb-6 text-lg">Join Connectify today</p>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 gap-4">
               <input
                 type="text"
                 placeholder="First Name"
                 className="w-full border border-gray-300 rounded-2xl px-5 py-4 outline-none focus:border-violet-500"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
               />
 
               <input
                 type="text"
                 placeholder="Last Name"
                 className="w-full border border-gray-300 rounded-2xl px-5 py-4 outline-none focus:border-violet-500"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
               />
             </div>
 
@@ -44,18 +103,27 @@ export default function Signup() {
               type="email"
               placeholder="Email Address"
               className="w-full border border-gray-300 rounded-2xl px-5 py-4 outline-none focus:border-violet-500"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
             />
 
             <input
               type="password"
               placeholder="Password"
               className="w-full border border-gray-300 rounded-2xl px-5 py-4 outline-none focus:border-violet-500"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
             />
 
             <input
               type="password"
               placeholder="Confirm Password"
               className="w-full border border-gray-300 rounded-2xl px-5 py-4 outline-none focus:border-violet-500"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
             />
 
             <button

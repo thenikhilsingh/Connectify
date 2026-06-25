@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
     },
     lastName: {
       type: String,
-      required: true,
+      required: false,
     },
     email: {
       type: String,
@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
 userSchema.pre("save", async function (next) {
   const user = this;
   if (!user.isModified("password")) {
-    next();
+    return next();
   }
 
   try {

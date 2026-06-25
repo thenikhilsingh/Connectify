@@ -3,10 +3,17 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const indexRouter = require("./routes/indexRouter");
 const authRouter = require("./routes/authRouter");
+const cors = require("cors");
 dotenv.config();
 
 const app = express();
 
+app.use(
+  cors({
+    origin: [process.env.CLIENT_URL],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use("/api/health", indexRouter);
 app.use("/api/auth", authRouter);
