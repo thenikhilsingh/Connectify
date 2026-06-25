@@ -5,9 +5,15 @@ import {
   MessageCircle,
   User,
   Settings,
+  LogOut,
 } from "lucide-react";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
+  const { LogoutUser } = useContext(AuthContext);
+  const navigate = useNavigate();
   return (
     <aside className="w-60 h-screen border-r bg-white sticky top-0 flex flex-col">
       <div className="p-6">
@@ -47,9 +53,18 @@ export default function Sidebar() {
           </li>
         </ul>
 
-        <button className="w-full mt-6 bg-violet-600 text-white py-3 rounded-xl">
-          + Create Post
-        </button>
+        <div>
+          <button
+            onClick={() => {
+              LogoutUser();
+              navigate("/logout");
+            }}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 py-2 text-white transition hover:bg-red-600"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
+        </div>
       </nav>
 
       <div className="p-4 border-t">

@@ -1,10 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Signup() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
+  const { storeTokenInLS } = useContext(AuthContext);
   const [errors, setErrors] = useState([]);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -40,6 +42,7 @@ export default function Signup() {
       );
       console.log(response.data);
       if (response.status === 200) {
+        storeTokenInLS(response.data.token);
         navigate("/");
         setFormData({
           firstName: "",

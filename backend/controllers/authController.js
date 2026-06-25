@@ -1,5 +1,5 @@
 const User = require("../models/user");
-const validationResult = require("../validators/authValidator");
+const { validationResult } = require("../validators/authValidator");
 
 const register = async (req, res) => {
   const errors = validationResult(req);

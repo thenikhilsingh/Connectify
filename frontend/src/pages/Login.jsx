@@ -1,6 +1,44 @@
-import { Link } from "react-router-dom";
+import { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const navigate = useNavigate();
+  const { storeTokenInLS } = useContext(AuthContext);
+  const { errors, setErrors } = useState([]);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/auth/login`,
+        formData,
+      );
+      console.log(response.data);
+      if (response.status === 200) {
+        storeTokenInLS(response.data.token);
+        navigate("/app");
+        setFormData({
+          email: "",
+          password: "",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f5f7fb] flex items-center justify-center px-6">
       <div className="bg-white rounded-3xl shadow-lg overflow-hidden max-w-6xl w-full grid grid-cols-2">
@@ -24,17 +62,23 @@ export default function Login() {
 
           <p className="text-gray-500 mb-8">Login to continue</p>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <input
               type="email"
               placeholder="Email or Username"
               className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
             />
 
             <input
               type="password"
               placeholder="Password"
               className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
             />
 
             <div className="text-right">
@@ -43,7 +87,10 @@ export default function Login() {
               </button>
             </div>
 
-            <button className="w-full bg-violet-600 text-white py-3 rounded-xl hover:bg-violet-700">
+            <button
+              type="submit"
+              className="w-full bg-violet-600 text-white py-3 rounded-xl hover:bg-violet-700"
+            >
               Login
             </button>
           </form>
@@ -51,7 +98,7 @@ export default function Login() {
           <div className="my-6 text-center text-gray-400">or continue with</div>
 
           <div className="space-y-3">
-            <button className="w-full border py-3 rounded-xl">
+            <button type="button" className="w-full border py-3 rounded-xl">
               Continue as a Guest
             </button>
           </div>
