@@ -46,4 +46,25 @@ const getRequestInfo = async (req, res) => {
   }
 };
 
-module.exports = { getPeople, sendFriendRequest, getRequestInfo };
+const requestNotifications = async (req, res) => {
+  try {
+    const notifications = await Friend.find({
+      reciever: req.user._id,
+      status: "pending",
+    }).populate("sender");
+
+    res.status(200).json({
+      success: true,
+      notifications,
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = {
+  getPeople,
+  sendFriendRequest,
+  getRequestInfo,
+  requestNotifications,
+};

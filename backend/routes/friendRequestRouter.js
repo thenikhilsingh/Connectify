@@ -3,6 +3,7 @@ const {
   getPeople,
   sendFriendRequest,
   getRequestInfo,
+  requestNotifications,
 } = require("../controllers/friendRequestController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -16,5 +17,6 @@ friendRequestRouter.post(
 );
 
 friendRequestRouter.get("/getRequestInfo/:id", authMiddleware, getRequestInfo);
+friendRequestRouter.get("/requestNotifications", authMiddleware, requestNotifications);
 
 module.exports = friendRequestRouter;

@@ -1,29 +1,24 @@
 import { UserPlus, Check, X, Heart, MessageCircle, Bell } from "lucide-react";
+import { useState } from "react";
+import useAxios from "../hooks/useAxios";
+import { useEffect } from "react";
 
 export default function Notifications() {
-  const requests = [
-    {
-      id: 1,
-      name: "Emma Watson",
-      mutual: 12,
-      time: "2 min ago",
-      image: "https://i.pravatar.cc/150?img=21",
-    },
-    {
-      id: 2,
-      name: "Noah Brown",
-      mutual: 8,
-      time: "25 min ago",
-      image: "https://i.pravatar.cc/150?img=22",
-    },
-    {
-      id: 3,
-      name: "Sophia Lee",
-      mutual: 15,
-      time: "1 hour ago",
-      image: "https://i.pravatar.cc/150?img=23",
-    },
-  ];
+  const api = useAxios();
+  const [friendRequests, setFriendRequests] = useState([]);
+  const getFriendRequests = async () => {
+    try {
+      const response = await api.get("/api/people/requestNotifications");
+      console.log(response, "requests");
+      setFriendRequests(response.data.notifications);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getFriendRequests();
+  }, []);
 
   const notifications = [
     {
@@ -45,6 +40,33 @@ export default function Notifications() {
       time: "Today",
     },
   ];
+  const getRelativeTime = (date) => {
+    const now = new Date();
+    const past = new Date(date);
+
+    const diff = Math.floor((now - past) / 1000); // seconds
+
+    if (diff < 60) return "Just now";
+
+    const minutes = Math.floor(diff / 60);
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+
+    const days = Math.floor(hours / 24);
+    if (days === 1) return "Yesterday";
+    if (days < 7) return `${days} days ago`;
+
+    const weeks = Math.floor(days / 7);
+    if (weeks < 5) return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
+
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months} month${months > 1 ? "s" : ""} ago`;
+
+    const years = Math.floor(days / 365);
+    return `${years} year${years > 1 ? "s" : ""} ago`;
+  };
 
   return (
     <div className="bg-[#f5f7fb] min-h-screen p-6">
@@ -61,25 +83,28 @@ export default function Notifications() {
             </div>
 
             <div className="space-y-5">
-              {requests.map((user) => (
+              {friendRequests.map((request) => (
                 <div
-                  key={user.id}
+                  key={request?.sender?._id}
                   className="flex items-center justify-between border rounded-2xl p-4 hover:shadow-md transition"
                 >
                   <div className="flex items-center gap-4">
                     <img
-                      src={user.image}
+                      src={request?.sender?.profilePicture}
                       className="w-16 h-16 rounded-full object-cover"
                     />
 
                     <div>
-                      <h3 className="font-semibold text-lg">{user.name}</h3>
+                      <h3 className="font-semibold text-lg">
+                        {`${request?.sender?.firstName} ${request?.sender?.lastName}`}
+                      </h3>
 
-                      <p className="text-gray-500 text-sm">
-                        {user.mutual} Mutual Friends
+                      <p className="text-gray-500 text-sm">0 Mutual Friends</p>
+
+                      <p className="text-xs text-gray-400 mt-1">
+                        {request?.updatedAt &&
+                          getRelativeTime(request.updatedAt)}
                       </p>
-
-                      <p className="text-xs text-gray-400 mt-1">{user.time}</p>
                     </div>
                   </div>
 
