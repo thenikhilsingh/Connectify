@@ -12,9 +12,8 @@ import {
 
 export default function Profile() {
   const [tab, setTab] = useState("Posts");
-
   const tabs = ["Posts", "Media", "Saved", "Friends"];
-
+  const [editProfile, setEditProfile] = useState(false);
   const posts = [
     {
       id: 1,
@@ -109,7 +108,10 @@ export default function Profile() {
                   </div>
 
                   {/* Right */}
-                  <button className="bg-violet-600 hover:bg-violet-700 transition text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow">
+                  <button
+                    onClick={() => setEditProfile(true)}
+                    className="bg-violet-600 hover:bg-violet-700 transition text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow"
+                  >
                     <Pencil size={18} />
                     Edit Profile
                   </button>
@@ -276,6 +278,128 @@ export default function Profile() {
           </div>
         </div>
       </div>
+      {editProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b px-8 py-5">
+              <h2 className="text-2xl font-bold">Edit Profile</h2>
+
+              <button
+                onClick={() => setEditProfile(false)}
+                className="text-3xl text-gray-400 hover:text-black"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-8 space-y-6 max-h-[75vh] overflow-y-auto">
+              {/* Cover Image */}
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Cover Image
+                </label>
+
+                <input
+                  type="file"
+                  className="w-full border rounded-xl p-3 file:bg-violet-600 file:text-white file:border-0 file:px-4 file:py-2 file:rounded-lg"
+                />
+              </div>
+
+              {/* Profile Picture */}
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Profile Picture
+                </label>
+
+                <input
+                  type="file"
+                  className="w-full border rounded-xl p-3 file:bg-violet-600 file:text-white file:border-0 file:px-4 file:py-2 file:rounded-lg"
+                />
+              </div>
+
+              {/* Name */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    First Name
+                  </label>
+
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    Last Name
+                  </label>
+
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="block text-sm font-semibold mb-2">Bio</label>
+
+                <textarea
+                  rows={4}
+                  placeholder="Tell people about yourself..."
+                  className="w-full border rounded-xl px-4 py-3 outline-none resize-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Location
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="India"
+                  className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+
+              {/* Website */}
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Website
+                </label>
+
+                <input
+                  type="url"
+                  placeholder="https://example.com"
+                  className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-4 border-t px-8 py-5">
+              <button
+                onClick={() => setEditProfile(false)}
+                className="px-6 py-3 rounded-xl bg-gray-100 hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+
+              <button className="px-6 py-3 rounded-xl bg-violet-600 text-white hover:bg-violet-700">
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

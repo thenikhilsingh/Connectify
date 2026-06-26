@@ -16,6 +16,9 @@ import Logout from "./components/Logout.jsx";
 import Messages from "./pages/Messages.jsx";
 import Error from "./pages/Error.jsx";
 import Profile from "./pages/Profile.jsx";
+import Explore from "./pages/Explore.jsx";
+import Notifications from "./pages/Notifications.jsx";
+import Settings from "./pages/Settings.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -29,6 +32,9 @@ const router = createBrowserRouter(
         <Route index element={<Home />}></Route>
         <Route path="messages" element={<Messages />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="explore" element={<Explore />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
       {/* 404 Route - Keep this LAST */}
       <Route path="*" element={<Error />} />
