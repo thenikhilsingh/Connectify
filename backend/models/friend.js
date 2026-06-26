@@ -8,7 +8,7 @@ const friendSchema = new mongoose.Schema(
       required: true,
     },
 
-    receiver: {
+    reciever: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,

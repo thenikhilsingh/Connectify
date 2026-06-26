@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const indexRouter = require("./routes/indexRouter");
 const authRouter = require("./routes/authRouter");
 const cors = require("cors");
+const friendRequestRouter = require("./routes/friendRequestRouter");
 dotenv.config();
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(
 app.use(express.json());
 app.use("/api/health", indexRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/people", friendRequestRouter);
 
 const PORT = process.env.PORT;
 connectDB().then(() => {
