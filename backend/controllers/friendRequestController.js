@@ -29,4 +29,21 @@ const sendFriendRequest = async (req, res) => {
   }
 };
 
-module.exports = { getPeople, sendFriendRequest };
+const getRequestInfo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const senderId = req.user._id;
+    const requestDetail = await Friend.findOne({
+      sender: senderId,
+      reciever: id,
+    });
+    res.status(200).json({
+      success: true,
+      requestDetail,
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { getPeople, sendFriendRequest, getRequestInfo };

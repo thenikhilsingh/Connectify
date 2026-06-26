@@ -2,6 +2,7 @@ const Router = require("express");
 const {
   getPeople,
   sendFriendRequest,
+  getRequestInfo,
 } = require("../controllers/friendRequestController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -13,5 +14,7 @@ friendRequestRouter.post(
   authMiddleware,
   sendFriendRequest,
 );
+
+friendRequestRouter.get("/getRequestInfo/:id", authMiddleware, getRequestInfo);
 
 module.exports = friendRequestRouter;
