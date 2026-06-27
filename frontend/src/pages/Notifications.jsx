@@ -68,6 +68,22 @@ export default function Notifications() {
     return `${years} year${years > 1 ? "s" : ""} ago`;
   };
 
+  const acceptOrDeniedRequest = async (id, action) => {
+    try {
+      const response = await api.put(
+        `/api/people/acceptOrDeniedRequest/${id}`,
+        {
+          status: action,
+        },
+      );
+      if (response.status === 200) {
+        getFriendRequests();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="bg-[#f5f7fb] min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
@@ -109,12 +125,22 @@ export default function Notifications() {
                   </div>
 
                   <div className="flex gap-3">
-                    <button className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-xl flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        acceptOrDeniedRequest(request._id, "accepted")
+                      }
+                      className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-xl flex items-center gap-2"
+                    >
                       <Check size={18} />
                       Accept
                     </button>
 
-                    <button className="bg-gray-100 hover:bg-red-100 text-gray-700 px-5 py-2 rounded-xl flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        acceptOrDeniedRequest(request._id, "rejected")
+                      }
+                      className="bg-gray-100 hover:bg-red-100 text-gray-700 px-5 py-2 rounded-xl flex items-center gap-2"
+                    >
                       <X size={18} />
                       Decline
                     </button>

@@ -71,9 +71,29 @@ const requestNotifications = async (req, res) => {
   }
 };
 
+const acceptOrDeniedRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const update = await Friend.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true },
+    );
+    res.status(200).json({
+      success: true,
+      update,
+      message: `request ${status}`,
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getPeople,
   sendFriendRequest,
   getRequestInfo,
   requestNotifications,
+  acceptOrDeniedRequest,
 };

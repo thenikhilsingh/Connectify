@@ -4,6 +4,7 @@ const {
   sendFriendRequest,
   getRequestInfo,
   requestNotifications,
+  acceptOrDeniedRequest,
 } = require("../controllers/friendRequestController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -21,6 +22,11 @@ friendRequestRouter.get(
   "/requestNotifications",
   authMiddleware,
   requestNotifications,
+);
+friendRequestRouter.put(
+  "/acceptOrDeniedRequest/:id",
+  authMiddleware,
+  acceptOrDeniedRequest,
 );
 
 module.exports = friendRequestRouter;
