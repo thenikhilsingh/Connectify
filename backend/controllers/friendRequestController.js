@@ -31,15 +31,24 @@ const sendFriendRequest = async (req, res) => {
 
 const getRequestInfo = async (req, res) => {
   try {
-    const { id } = req.params;
-    const senderId = req.user._id;
-    const requestDetail = await Friend.findOne({
-      sender: senderId,
-      reciever: id,
+    const userId = req.user._id;
+
+    const requestDetail = await Friend.find({
+      $or: [{ sender: userId }, { reciever: userId }],
+    })
+      .populate("sender")
+      .populate("reciever");
+
+    const data = requestDetail.map((request) => {
+      return {
+        ...request.toObject(),
+        role: request.sender._id.equals(userId) ? "sender" : "reciever",
+      };
     });
+
     res.status(200).json({
       success: true,
-      requestDetail,
+      data,
     });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });

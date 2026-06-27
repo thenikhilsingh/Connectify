@@ -16,7 +16,11 @@ friendRequestRouter.post(
   sendFriendRequest,
 );
 
-friendRequestRouter.get("/getRequestInfo/:id", authMiddleware, getRequestInfo);
-friendRequestRouter.get("/requestNotifications", authMiddleware, requestNotifications);
+friendRequestRouter.get("/getRequestInfo", authMiddleware, getRequestInfo);
+friendRequestRouter.get(
+  "/requestNotifications",
+  authMiddleware,
+  requestNotifications,
+);
 
 module.exports = friendRequestRouter;

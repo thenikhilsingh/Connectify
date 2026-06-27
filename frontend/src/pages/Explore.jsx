@@ -62,36 +62,80 @@ export default function Explore() {
       console.log(error);
     }
   };
-  const [friendRequestStatus, setFriendRequestStatus] = useState("");
-  const getRequestInfo = async (id) => {
+
+  const [requests, setRequests] = useState([]);
+  const getRequestInfo = async () => {
     try {
-      const response = await api.get(`/api/people/getRequestInfo/${id}`);
-      setFriendRequestStatus(response.data.requestDetail.status);
+      const response = await api.get("/api/people/getRequestInfo");
+      setRequests(response.data.data);
     } catch (error) {
       console.log(error);
     }
   };
+  useEffect(() => {
+    getPeople();
+    getRequestInfo();
+  }, []);
 
-  const renderButton = (s, id) =>
-    s === "accepted" ? (
-      <button className="mt-4 w-full bg-green-100 text-green-700 rounded-xl py-2 flex justify-center gap-2">
-        <Check size={18} />
-        Friends
-      </button>
-    ) : s === "pending" ? (
-      <button className="mt-4 w-full bg-yellow-100 text-yellow-700 rounded-xl py-2 flex justify-center gap-2">
-        <Clock size={18} />
-        Request Sent
-      </button>
-    ) : (
-      <button
-        onClick={() => sendRequest(id)}
-        className="mt-4 w-full bg-violet-600 text-white rounded-xl py-2 flex justify-center gap-2"
-      >
-        <UserPlus size={18} />
-        Add Friend
-      </button>
-    );
+  const renderButton = (request, id) => {
+    if (!request) {
+      return (
+        <button
+          onClick={() => sendRequest(id)}
+          className="mt-4 w-full bg-violet-600 text-white rounded-xl py-2 flex justify-center gap-2"
+        >
+          <UserPlus size={18} />
+          Add Friend
+        </button>
+      );
+    }
+
+    if (request.status === "accepted") {
+      return (
+        <button className="mt-4 w-full bg-green-100 text-green-700 rounded-xl py-2 flex justify-center gap-2">
+          <Check size={18} />
+          Friends
+        </button>
+      );
+    }
+
+    if (request.status === "pending") {
+      // Logged-in user sent the request
+      if (request.role === "sender") {
+        return (
+          <button className="mt-4 w-full bg-yellow-100 text-yellow-700 rounded-xl py-2 flex justify-center gap-2">
+            <Clock size={18} />
+            Request Sent
+          </button>
+        );
+      }
+      
+      if (request.status === "rejected") {
+        return (
+          <button
+            onClick={() => sendRequest(id)}
+            className="mt-4 w-full bg-violet-600 text-white rounded-xl py-2 flex justify-center gap-2"
+          >
+            <UserPlus size={18} />
+            Add Friend
+          </button>
+        );
+      }
+
+      // Logged-in user received the request
+      return (
+        <div className="flex gap-2 mt-4">
+          <button className="flex-1 bg-green-500 text-white rounded-xl py-2">
+            Accept
+          </button>
+
+          <button className="flex-1 bg-red-500 text-white rounded-xl py-2">
+            Decline
+          </button>
+        </div>
+      );
+    }
+  };
   return (
     <div className="bg-[#f5f7fb] min-h-screen p-6">
       <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow p-6">
@@ -158,10 +202,14 @@ export default function Explore() {
         {tab === "People" && (
           <div className="grid grid-cols-3 gap-6 mt-8">
             {people
-              .filter((person) => person._id !== user._id)
+              .filter((person) => person._id !== user?._id)
               .filter((person) => person.email !== "guest@gmail.com")
               .map((person) => {
-                getRequestInfo(person._id);
+                const request = requests.find(
+                  (req) =>
+                    req.sender._id === person._id ||
+                    req.reciever._id === person._id,
+                );
                 return (
                   <div
                     key={person._id}
@@ -178,7 +226,7 @@ export default function Explore() {
                     <p className="text-center text-sm text-gray-400 mt-2">
                       0 mutual friends
                     </p>
-                    {renderButton(friendRequestStatus, person._id)}
+                    {renderButton(request, person._id)}
                   </div>
                 );
               })}
