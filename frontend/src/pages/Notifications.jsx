@@ -106,7 +106,7 @@ export default function Notifications() {
                 >
                   <div className="flex items-center gap-4">
                     <img
-                      src={request?.sender?.profilePicture}
+                      src={request?.sender?.profilePicture || "/dp.png"}
                       className="w-16 h-16 rounded-full object-cover"
                     />
 

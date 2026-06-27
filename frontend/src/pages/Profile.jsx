@@ -16,7 +16,7 @@ export default function Profile() {
   const api = useAxios();
   const { user, setUser } = useContext(AuthContext);
   const [tab, setTab] = useState("Posts");
-  const tabs = ["Posts", "Media", "Saved", "Friends"];
+  const tabs = ["Posts", "Friends"];
   const [editProfile, setEditProfile] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -55,7 +55,6 @@ export default function Profile() {
     "JWT",
   ];
 
-  const friends = ["Emma Watson", "Noah Brown", "Olivia Davis", "James Taylor"];
   useEffect(() => {
     if (user) {
       setFormData({
@@ -93,6 +92,19 @@ export default function Profile() {
       console.log(error);
     }
   };
+  const [friends, setFriends] = useState([]);
+  const getFriends = async () => {
+    try {
+      const response = await api.get("/api/friends");
+      console.log(response.data.friendList);
+      setFriends(response.data.friendList);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    getFriends();
+  }, []);
 
   return (
     <div className="bg-[#f5f7fb] min-h-screen p-6">
@@ -262,24 +274,6 @@ export default function Profile() {
               </div>
             )}
 
-            {tab === "Media" && (
-              <div className="grid grid-cols-3 gap-4 p-6">
-                {Array.from({ length: 9 }).map((_, i) => (
-                  <img
-                    key={i}
-                    src={`https://picsum.photos/400?${i}`}
-                    className="rounded-xl aspect-square object-cover"
-                  />
-                ))}
-              </div>
-            )}
-
-            {tab === "Saved" && (
-              <div className="p-10 text-center text-gray-500">
-                No saved posts yet.
-              </div>
-            )}
-
             {tab === "Friends" && (
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -287,7 +281,7 @@ export default function Profile() {
                     <h2 className="text-2xl font-bold text-gray-800">
                       Friends
                     </h2>
-                    <p className="text-gray-500">{friends.length} Friends</p>
+                    <p className="text-gray-500">{friends?.length} Friends</p>
                   </div>
 
                   <button className="text-violet-600 font-medium hover:underline">
@@ -298,22 +292,21 @@ export default function Profile() {
                 <div className="grid grid-cols-4 gap-5">
                   {friends.map((friend, index) => (
                     <div
-                      key={friend}
+                      key={friend._id}
                       className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-lg transition duration-300 cursor-pointer"
                     >
                       <img
-                        src={`https://i.pravatar.cc/300?img=${index + 10}`}
-                        alt={friend}
+                        src={friend?.profilePicture || "/dp.png"}
                         className="w-full h-44 object-cover"
                       />
 
                       <div className="p-4">
                         <h3 className="font-semibold text-gray-800">
-                          {friend}
+                          {`${friend?.firstName} ${friend.lastName}`}
                         </h3>
 
                         <p className="text-sm text-gray-500 mt-1">
-                          {Math.floor(Math.random() * 20) + 1} mutual friends
+                          0 mutual friends
                         </p>
 
                         <button className="w-full mt-4 bg-violet-100 text-violet-700 py-2 rounded-xl hover:bg-violet-200 transition">

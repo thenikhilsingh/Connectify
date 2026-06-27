@@ -109,7 +109,7 @@ export default function Explore() {
           </button>
         );
       }
-      
+
       if (request.status === "rejected") {
         return (
           <button
@@ -216,7 +216,7 @@ export default function Explore() {
                     className="border rounded-2xl p-5 hover:shadow-lg"
                   >
                     <img
-                      src={person?.profilePicture}
+                      src={person?.profilePicture || "/dp.png"}
                       className="w-24 h-24 rounded-full mx-auto"
                     />
                     <h3 className="text-center text-xl font-semibold mt-4">
