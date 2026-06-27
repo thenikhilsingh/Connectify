@@ -24,9 +24,17 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    profilePicturePublicId: {
+      type: String,
+      default: "",
+    },
     coverImage: {
       type: String,
       required: false,
+    },
+    coverImagePublicId: {
+      type: String,
+      default: "",
     },
     bio: {
       type: String,

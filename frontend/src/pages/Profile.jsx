@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   MapPin,
   Globe,
@@ -9,11 +9,24 @@ import {
   Users,
   Image as ImageIcon,
 } from "lucide-react";
+import useAxios from "../hooks/useAxios";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Profile() {
+  const api = useAxios();
+  const { user, setUser } = useContext(AuthContext);
   const [tab, setTab] = useState("Posts");
   const tabs = ["Posts", "Media", "Saved", "Friends"];
   const [editProfile, setEditProfile] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    bio: "",
+    location: "",
+  });
+
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [coverImage, setCoverImage] = useState(null);
   const posts = [
     {
       id: 1,
@@ -43,15 +56,59 @@ export default function Profile() {
   ];
 
   const friends = ["Emma Watson", "Noah Brown", "Olivia Davis", "James Taylor"];
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        bio: user.bio,
+        location: user.location,
+      });
+    }
+  }, [user]);
+  const updateProfile = async () => {
+    try {
+      const data = new FormData();
+
+      data.append("firstName", formData.firstName);
+      data.append("lastName", formData.lastName);
+      data.append("bio", formData.bio);
+      data.append("location", formData.location);
+
+      if (profilePicture) {
+        data.append("profilePicture", profilePicture);
+      }
+
+      if (coverImage) {
+        data.append("coverImage", coverImage);
+      }
+
+      const response = await api.patch("/api/profile", data);
+      if (response.status === 200) {
+        setUser(response.data.user);
+        setEditProfile(false);
+      }
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="bg-[#f5f7fb] min-h-screen p-6">
       <div className="max-w-8xl mx-auto">
         <div>
           <div className="relative rounded-3xl overflow-hidden bg-white shadow">
-            <div className="h-64 bg-linear-to-r from-violet-600 via-purple-500 to-indigo-500 relative">
+            <div className="relative h-64 overflow-hidden">
+              <img
+                src={user?.coverImage}
+                alt="Cover"
+                className="absolute inset-0 w-full h-full object-cover object-center"
+              />
+
               <button className="absolute right-6 bottom-6 bg-white px-4 py-2 rounded-xl flex items-center gap-2 shadow">
-                <Camera size={18} /> Change Cover
+                <Camera size={18} />
+                Change Cover
               </button>
             </div>
 
@@ -62,7 +119,7 @@ export default function Profile() {
                   <div className="flex items-end gap-6">
                     <div className="relative -mt-20">
                       <img
-                        src="https://i.pravatar.cc/200?img=12"
+                        src={user?.profilePicture}
                         className="w-44 h-44 rounded-full border-[5px] border-white object-cover shadow-lg"
                       />
 
@@ -73,35 +130,22 @@ export default function Profile() {
 
                     <div className="pb-3">
                       <div className="flex items-center gap-3">
-                        <h1 className="text-4xl font-bold">John Doe</h1>
-
-                        <span className="bg-violet-100 text-violet-700 px-3 py-1 rounded-full text-sm">
-                          Verified
-                        </span>
+                        <h1 className="text-4xl font-bold">
+                          {`${user?.firstName} ${user?.lastName}`}
+                        </h1>
                       </div>
 
-                      <p className="text-gray-500 text-lg mt-1">
-                        Full Stack Developer
-                      </p>
-
-                      <p className="mt-2 text-gray-700">
-                        Building Connectify 🚀 | MERN Stack Developer
-                      </p>
+                      <p className="text-gray-500 text-lg mt-1">{user?.bio}</p>
 
                       <div className="flex flex-wrap gap-6 mt-4 text-gray-500">
                         <span className="flex items-center gap-2">
                           <MapPin size={16} />
-                          India
+                          {user?.location}
                         </span>
 
                         <span className="flex items-center gap-2">
                           <Globe size={16} />
-                          connectify.dev
-                        </span>
-
-                        <span className="flex items-center gap-2">
-                          <CalendarDays size={16} />
-                          Joined June 2026
+                          {user?.email}
                         </span>
                       </div>
                     </div>
@@ -303,6 +347,8 @@ export default function Profile() {
 
                 <input
                   type="file"
+                  accept="image/*"
+                  onChange={(e) => setCoverImage(e.target.files[0])}
                   className="w-full border rounded-xl p-3 file:bg-violet-600 file:text-white file:border-0 file:px-4 file:py-2 file:rounded-lg"
                 />
               </div>
@@ -315,6 +361,8 @@ export default function Profile() {
 
                 <input
                   type="file"
+                  accept="image/*"
+                  onChange={(e) => setProfilePicture(e.target.files[0])}
                   className="w-full border rounded-xl p-3 file:bg-violet-600 file:text-white file:border-0 file:px-4 file:py-2 file:rounded-lg"
                 />
               </div>
@@ -330,6 +378,13 @@ export default function Profile() {
                     type="text"
                     placeholder="First Name"
                     className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500"
+                    value={formData.firstName}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        firstName: e.target.value,
+                      })
+                    }
                   />
                 </div>
 
@@ -342,6 +397,13 @@ export default function Profile() {
                     type="text"
                     placeholder="Last Name"
                     className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500"
+                    value={formData.lastName}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        lastName: e.target.value,
+                      })
+                    }
                   />
                 </div>
               </div>
@@ -351,6 +413,13 @@ export default function Profile() {
                 <label className="block text-sm font-semibold mb-2">Bio</label>
 
                 <textarea
+                  value={formData.bio}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      bio: e.target.value,
+                    })
+                  }
                   rows={4}
                   placeholder="Tell people about yourself..."
                   className="w-full border rounded-xl px-4 py-3 outline-none resize-none focus:ring-2 focus:ring-violet-500"
@@ -364,21 +433,15 @@ export default function Profile() {
                 </label>
 
                 <input
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      location: e.target.value,
+                    })
+                  }
                   type="text"
                   placeholder="India"
-                  className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500"
-                />
-              </div>
-
-              {/* Website */}
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Website
-                </label>
-
-                <input
-                  type="url"
-                  placeholder="https://example.com"
                   className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-violet-500"
                 />
               </div>
@@ -393,7 +456,10 @@ export default function Profile() {
                 Cancel
               </button>
 
-              <button className="px-6 py-3 rounded-xl bg-violet-600 text-white hover:bg-violet-700">
+              <button
+                onClick={updateProfile}
+                className="px-6 py-3 rounded-xl bg-violet-600 text-white hover:bg-violet-700"
+              >
                 Save Changes
               </button>
             </div>

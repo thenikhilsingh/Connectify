@@ -42,7 +42,7 @@ export default function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ storeTokenInLS, LogoutUser, isLoggedIn, token, user }}
+      value={{ storeTokenInLS, LogoutUser, isLoggedIn, token, user, setUser }}
     >
       {children}
     </AuthContext.Provider>

@@ -88,7 +88,7 @@ export default function Sidebar() {
       <div className="p-4 border-t">
         <div className="flex items-center gap-3">
           <img
-            src="https://i.pravatar.cc/150"
+            src={user?.profilePicture}
             alt="Profile"
             className="w-10 h-10 rounded-full"
           />

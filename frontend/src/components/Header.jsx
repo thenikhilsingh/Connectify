@@ -1,6 +1,9 @@
 import { Bell, MessageCircle } from "lucide-react";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Header() {
+  const { user } = useContext(AuthContext);
   return (
     <header className="h-16 bg-white border-b px-6 flex items-center justify-between">
       <input
@@ -15,7 +18,7 @@ export default function Header() {
         <MessageCircle className="cursor-pointer" />
 
         <img
-          src="https://i.pravatar.cc/150"
+          src={user?.profilePicture}
           alt=""
           className="w-10 h-10 rounded-full"
         />
