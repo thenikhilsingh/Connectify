@@ -106,7 +106,10 @@ export default function Profile() {
                 className="absolute inset-0 w-full h-full object-cover object-center"
               />
 
-              <button className="absolute right-6 bottom-6 bg-white px-4 py-2 rounded-xl flex items-center gap-2 shadow">
+              <button
+                onClick={() => setEditProfile(true)}
+                className="absolute right-6 bottom-6 bg-white px-4 py-2 rounded-xl flex items-center gap-2 shadow"
+              >
                 <Camera size={18} />
                 Change Cover
               </button>
@@ -123,7 +126,10 @@ export default function Profile() {
                         className="w-44 h-44 rounded-full border-[5px] border-white object-cover shadow-lg"
                       />
 
-                      <button className="absolute bottom-2 right-2 bg-gray-200 hover:bg-gray-300 p-2 rounded-full">
+                      <button
+                        onClick={() => setEditProfile(true)}
+                        className="absolute bottom-2 right-2 bg-gray-200 hover:bg-gray-300 p-2 rounded-full"
+                      >
                         <Camera size={18} />
                       </button>
                     </div>
