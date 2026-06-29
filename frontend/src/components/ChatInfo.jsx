@@ -1,6 +1,6 @@
 import { BellOff, FileText, ImageIcon } from "lucide-react";
 
-export default function ChatInfo() {
+export default function ChatInfo({ selectedFriendDetails }) {
   const media = [
     "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200",
     "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=200",
@@ -26,19 +26,23 @@ export default function ChatInfo() {
       {/* Profile */}
       <div className="flex flex-col items-center py-8 px-6">
         <img
-          src="https://i.pravatar.cc/150?img=5"
+          src={selectedFriendDetails?.profilePicture || "/dp.png"}
           alt=""
           className="w-24 h-24 rounded-full object-cover"
         />
 
-        <h2 className="mt-4 text-2xl font-bold">Emma Watson</h2>
+        <h2 className="mt-4 text-2xl font-bold">
+          {`${selectedFriendDetails?.firstName} ${selectedFriendDetails?.lastName}`}
+        </h2>
 
-        <p className="text-gray-500">UI/UX Designer</p>
+        <p className="text-gray-500">{selectedFriendDetails?.bio}</p>
 
-        <div className="flex items-center gap-2 mt-4 text-green-500 text-sm font-medium">
-          <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
-          Online
-        </div>
+        {selectedFriendDetails?.isOnline && (
+          <div className="flex items-center gap-2 mt-4 text-green-500 text-sm font-medium">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+            Online
+          </div>
+        )}
       </div>
 
       <hr />

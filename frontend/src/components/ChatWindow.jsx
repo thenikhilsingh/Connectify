@@ -7,7 +7,7 @@ import {
   SendHorizontal,
 } from "lucide-react";
 
-export default function ChatWindow() {
+export default function ChatWindow({ selectedFriendDetails }) {
   return (
     <div className="bg-white rounded-3xl shadow-sm flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -15,7 +15,7 @@ export default function ChatWindow() {
         <div className="flex items-center gap-3">
           <div className="relative">
             <img
-              src="https://i.pravatar.cc/100?img=5"
+              src={selectedFriendDetails?.profilePicture || "/dp.png"}
               alt=""
               className="w-12 h-12 rounded-full object-cover"
             />
@@ -24,9 +24,11 @@ export default function ChatWindow() {
           </div>
 
           <div>
-            <h2 className="font-bold text-lg text-gray-900">Emma Watson</h2>
+            <h2 className="font-bold text-lg text-gray-900">{`${selectedFriendDetails?.firstName} ${selectedFriendDetails?.lastName}`}</h2>
 
-            <p className="text-green-500 text-sm">• Online</p>
+            {selectedFriendDetails.isOnline && (
+              <p className="text-green-500 text-sm">• Online</p>
+            )}
           </div>
         </div>
 
