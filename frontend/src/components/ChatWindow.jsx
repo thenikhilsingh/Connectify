@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import useAxios from "../hooks/useAxios";
 import { useEffect } from "react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import socket from "../socket/socket";
@@ -21,6 +21,8 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   dayjs.extend(relativeTime);
+  const bottomRef = useRef(null);
+
   const getMessages = async () => {
     try {
       const response = await api.get(`/api/messages/${selectedFriend}`);
@@ -64,6 +66,12 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
     };
   }, []);
 
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
+  }, [messages]);
+
   return (
     <div className="bg-white rounded-3xl shadow-sm flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -105,7 +113,6 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 bg-[#FAFAFC]">
-        {/* Left */}
         {messages.map((message) => {
           return user._id === message.sender ? (
             <div key={message._id} className="flex justify-end">
@@ -127,7 +134,7 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
             </div>
           );
         })}
-        {/* Right */}
+        <div ref={bottomRef}></div>
       </div>
 
       {/* Input */}
