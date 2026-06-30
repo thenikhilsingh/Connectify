@@ -10,6 +10,7 @@ const friendsRouter = require("./routes/friendsRouter");
 const { createServer } = require("http");
 const initSocket = require("./socket/socket");
 const socketHandler = require("./socket/socketHandler");
+const messagesRouter = require("./routes/messagesRouter");
 dotenv.config();
 
 const app = express();
@@ -30,6 +31,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/people", friendRequestRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/friends", friendsRouter);
+app.use("/api/messages", messagesRouter);
 
 const PORT = process.env.PORT;
 connectDB().then(() => {

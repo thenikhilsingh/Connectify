@@ -6,8 +6,62 @@ import {
   Paperclip,
   SendHorizontal,
 } from "lucide-react";
+import useAxios from "../hooks/useAxios";
+import { useEffect } from "react";
+import { useState } from "react";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import socket from "../socket/socket";
 
-export default function ChatWindow({ selectedFriendDetails }) {
+export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
+  const api = useAxios();
+  const { user } = useContext(AuthContext);
+  const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState("");
+
+  const getMessages = async () => {
+    try {
+      const response = await api.get(`/api/messages/${selectedFriend}`);
+      console.log(response);
+      setMessages(response.data.messages);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedFriend) {
+      getMessages();
+    }
+  }, [selectedFriend]);
+
+  const handleSendMessage = () => {
+    if (!message.trim()) return;
+
+    socket.emit("sendMessage", {
+      sender: user._id,
+      reciever: selectedFriend,
+      text: message,
+    });
+
+    setMessage("");
+  };
+
+  useEffect(() => {
+    socket.on("messageSent", (newMessage) => {
+      setMessages((prev) => [...prev, newMessage]);
+    });
+
+    socket.on("receiveMessage", (newMessage) => {
+      setMessages((prev) => [...prev, newMessage]);
+    });
+
+    return () => {
+      socket.off("messageSent");
+      socket.off("receiveMessage");
+    };
+  }, []);
+
   return (
     <div className="bg-white rounded-3xl shadow-sm flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -50,48 +104,28 @@ export default function ChatWindow({ selectedFriendDetails }) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 bg-[#FAFAFC]">
         {/* Left */}
-        <div className="flex">
-          <div className="bg-white rounded-xl px-4 py-3 max-w-xs shadow-sm">
-            <p className="text-gray-800">Hey! 👋</p>
-            <span className="text-xs text-gray-400 mt-2 block">10:21 AM</span>
-          </div>
-        </div>
-
+        {messages.map((message) => {
+          return user._id === message.sender ? (
+            <div key={message._id} className="flex justify-end">
+              <div className="bg-violet-600 text-white rounded-xl px-4 py-3 max-w-xs">
+                <p>{message?.text}</p>
+                <span className="text-[11px] text-violet-100 mt-2 block">
+                  {message?.createdAt}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div key={message._id} className="flex">
+              <div className="bg-white rounded-xl px-4 py-3 max-w-xs shadow-sm">
+                <p className="text-gray-800">{message?.text}</p>
+                <span className="text-xs text-gray-400 mt-2 block">
+                  {message?.createdAt}
+                </span>
+              </div>
+            </div>
+          );
+        })}
         {/* Right */}
-        <div className="flex justify-end">
-          <div className="bg-violet-600 text-white rounded-xl px-4 py-3 max-w-xs">
-            <p>Hello Emma!</p>
-            <span className="text-[11px] text-violet-100 mt-2 block">
-              10:22 AM
-            </span>
-          </div>
-        </div>
-
-        {/* Left */}
-        <div className="flex">
-          <div className="bg-white rounded-xl px-4 py-3 max-w-xs shadow-sm">
-            <p>How's Connectify going?</p>
-            <span className="text-xs text-gray-400 mt-2 block">10:24 AM</span>
-          </div>
-        </div>
-
-        {/* Right */}
-        <div className="flex justify-end">
-          <div className="bg-violet-600 text-white rounded-xl px-4 py-3 max-w-xs">
-            <p>Almost finished 😄</p>
-            <span className="text-[11px] text-violet-100 mt-2 block">
-              10:25 AM
-            </span>
-          </div>
-        </div>
-
-        {/* Left */}
-        <div className="flex">
-          <div className="bg-white rounded-xl px-4 py-3 max-w-xs shadow-sm">
-            <p>Looks amazing 🚀</p>
-            <span className="text-xs text-gray-400 mt-2 block">10:26 AM</span>
-          </div>
-        </div>
       </div>
 
       {/* Input */}
@@ -107,10 +141,15 @@ export default function ChatWindow({ selectedFriendDetails }) {
         <input
           type="text"
           placeholder="Type a message..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
           className="flex-1 bg-gray-100 rounded-full px-5 py-3 outline-none text-sm"
         />
 
-        <button className="w-11 h-11 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 transition">
+        <button
+          onClick={handleSendMessage}
+          className="w-11 h-11 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 transition"
+        >
           <SendHorizontal size={18} />
         </button>
       </div>

@@ -1,3 +1,5 @@
+const { saveMessage } = require("../controllers/messagesController");
+
 const onlineUsers = {};
 
 function socketHandler(io) {
@@ -10,6 +12,23 @@ function socketHandler(io) {
       console.log(`${userId} joined`);
 
       console.log(onlineUsers);
+    });
+
+    socket.on("sendMessage", async (data) => {
+      try {
+        const savedMessage = await saveMessage(data);
+        console.log(savedMessage);
+        socket.emit("messageSent", savedMessage);
+        const receiverSocket = onlineUsers[data.reciever];
+        console.log(receiverSocket);
+        if (receiverSocket) {
+          io.to(receiverSocket).emit("receiveMessage", savedMessage);
+        }
+        console.log("Data:", data);
+        console.log("Online Users:", onlineUsers);
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     socket.on("disconnect", () => {

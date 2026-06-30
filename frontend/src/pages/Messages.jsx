@@ -53,7 +53,7 @@ export default function Messages() {
 
       {/* Center */}
       <div className="flex-1">
-        <ChatWindow selectedFriendDetails={selectedFriendDetails} />
+        <ChatWindow selectedFriend={selectedFriend} selectedFriendDetails={selectedFriendDetails} />
       </div>
 
       {/* Right */}
