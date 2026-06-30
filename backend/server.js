@@ -7,9 +7,16 @@ const cors = require("cors");
 const friendRequestRouter = require("./routes/friendRequestRouter");
 const profileRouter = require("./routes/profileRouter");
 const friendsRouter = require("./routes/friendsRouter");
+const { createServer } = require("http");
+const initSocket = require("./socket/socket");
+const socketHandler = require("./socket/socketHandler");
 dotenv.config();
 
 const app = express();
+const server = createServer(app);
+const io = initSocket(server);
+
+socketHandler(io);
 
 app.use(
   cors({
@@ -26,7 +33,8 @@ app.use("/api/friends", friendsRouter);
 
 const PORT = process.env.PORT;
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  // app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`the server is listening on http://localhost:${PORT}/`);
   });
 });

@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
+import socket from "../socket/socket";
 
 export const AuthContext = createContext();
 
@@ -37,8 +38,28 @@ export default function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    getLoggedInUserData();
+    if (token) {
+      getLoggedInUserData();
+    }
+  }, [token]);
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log(`User Connected with id:${socket.id} `);
+    });
+
+    return () => {
+      socket.off("connect", () => {
+        console.log(`User disonnected with id: ${socket.id}`);
+      });
+    };
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      socket.emit("join", user._id);
+    }
+  }, [user]);
 
   return (
     <AuthContext.Provider
