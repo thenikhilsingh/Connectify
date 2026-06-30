@@ -12,13 +12,15 @@ import { useState } from "react";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import socket from "../socket/socket";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 
 export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
   const api = useAxios();
   const { user } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-
+  dayjs.extend(relativeTime);
   const getMessages = async () => {
     try {
       const response = await api.get(`/api/messages/${selectedFriend}`);
@@ -110,7 +112,7 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
               <div className="bg-violet-600 text-white rounded-xl px-4 py-3 max-w-xs">
                 <p>{message?.text}</p>
                 <span className="text-[11px] text-violet-100 mt-2 block">
-                  {message?.createdAt}
+                  {dayjs(message?.createdAt).fromNow()}
                 </span>
               </div>
             </div>
@@ -119,7 +121,7 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
               <div className="bg-white rounded-xl px-4 py-3 max-w-xs shadow-sm">
                 <p className="text-gray-800">{message?.text}</p>
                 <span className="text-xs text-gray-400 mt-2 block">
-                  {message?.createdAt}
+                  {dayjs(message?.createdAt).fromNow()}
                 </span>
               </div>
             </div>
