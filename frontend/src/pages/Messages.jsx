@@ -48,17 +48,27 @@ export default function Messages() {
     <div className="flex h-[calc(100vh-100px)] gap-6 p-5">
       {/* Left */}
       <div className="w-80">
-        <ChatList friends={friends} setSelectedFriend={setSelectedFriend} />
+        <ChatList
+          friends={friends}
+          selectedFriend={selectedFriend}
+          setSelectedFriend={setSelectedFriend}
+        />
       </div>
 
       {/* Center */}
       <div className="flex-1">
-        <ChatWindow selectedFriend={selectedFriend} selectedFriendDetails={selectedFriendDetails} />
+        <ChatWindow
+          selectedFriend={selectedFriend}
+          selectedFriendDetails={selectedFriendDetails}
+        />
       </div>
 
       {/* Right */}
       <div className="w-80">
-        <ChatInfo selectedFriendDetails={selectedFriendDetails} />
+        <ChatInfo
+          selectedFriend={selectedFriend}
+          selectedFriendDetails={selectedFriendDetails}
+        />
       </div>
     </div>
   );

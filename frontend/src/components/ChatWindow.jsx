@@ -2,7 +2,6 @@ import {
   Phone,
   Video,
   MoreVertical,
-  Smile,
   Paperclip,
   SendHorizontal,
 } from "lucide-react";
@@ -22,6 +21,7 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   const bottomRef = useRef(null);
 
   const getMessages = async () => {
@@ -40,8 +40,29 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
     }
   }, [selectedFriend]);
 
-  const handleSendMessage = () => {
-    if (!message.trim()) return;
+  const handleSendMessage = async () => {
+    if (!message.trim() && !selectedFile) return;
+
+    if (selectedFile) {
+      const formData = new FormData();
+
+      formData.append("file", selectedFile);
+      formData.append("reciever", selectedFriend);
+      formData.append("text", message);
+
+      try {
+        const response = await api.post("/api/messages/upload", formData);
+
+        setMessages((prev) => [...prev, response.data.newMessage]);
+
+        setSelectedFile(null);
+        setMessage("");
+      } catch (error) {
+        console.log(error);
+      }
+
+      return;
+    }
 
     socket.emit("sendMessage", {
       sender: user._id,
@@ -157,20 +178,70 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
         {messages.map((message) => {
           return user._id === message.sender ? (
             <div key={message._id} className="flex justify-end">
-              <div className="bg-violet-600 text-white rounded-xl px-4 py-3 max-w-xs">
-                <p>{message?.text}</p>
-                <span className="text-[11px] text-violet-100 mt-2 block">
-                  {dayjs(message?.createdAt).fromNow()}
-                </span>
+              <div className="bg-violet-600 text-white rounded-2xl overflow-hidden max-w-sm">
+                {message.file?.url &&
+                  (message.file.type.startsWith("image") ? (
+                    <img
+                      src={message.file.url}
+                      alt=""
+                      className="w-full max-h-72 object-cover"
+                    />
+                  ) : (
+                    <a
+                      href={message.file.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block px-4 pt-4 text-white underline"
+                    >
+                      📎 {message.file.originalName}
+                    </a>
+                  ))}
+
+                {(message.text || !message.file?.url) && (
+                  <div className="px-4 py-3">
+                    <p>{message.text}</p>
+                  </div>
+                )}
+
+                <div className="px-4 pb-2 flex justify-end">
+                  <span className="text-[11px] text-violet-100">
+                    {dayjs(message.createdAt).fromNow()}
+                  </span>
+                </div>
               </div>
             </div>
           ) : (
             <div key={message._id} className="flex">
-              <div className="bg-white rounded-xl px-4 py-3 max-w-xs shadow-sm">
-                <p className="text-gray-800">{message?.text}</p>
-                <span className="text-xs text-gray-400 mt-2 block">
-                  {dayjs(message?.createdAt).fromNow()}
-                </span>
+              <div className="bg-white rounded-2xl shadow-sm overflow-hidden max-w-sm">
+                {message.file?.url &&
+                  (message.file.type.startsWith("image") ? (
+                    <img
+                      src={message.file.url}
+                      alt=""
+                      className="w-full max-h-72 object-cover"
+                    />
+                  ) : (
+                    <a
+                      href={message.file.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block px-4 pt-4 text-violet-600 underline"
+                    >
+                      📎 {message.file.originalName}
+                    </a>
+                  ))}
+
+                {(message.text || !message.file?.url) && (
+                  <div className="px-4 py-3">
+                    <p className="text-gray-800">{message.text}</p>
+                  </div>
+                )}
+
+                <div className="px-4 pb-2 flex justify-end">
+                  <span className="text-[11px] text-gray-400">
+                    {dayjs(message.createdAt).fromNow()}
+                  </span>
+                </div>
               </div>
             </div>
           );
@@ -179,29 +250,40 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
       </div>
 
       {/* Input */}
-      <div className="border-t px-4 py-3 flex items-center gap-3 bg-white">
-        <button className="text-gray-500 hover:text-violet-600">
-          <Smile size={20} />
-        </button>
-
-        <button className="text-gray-500 hover:text-violet-600">
-          <Paperclip size={20} />
-        </button>
-
-        <input
-          type="text"
-          placeholder="Type a message..."
-          value={message}
-          onChange={handleChange}
-          className="flex-1 bg-gray-100 rounded-full px-5 py-3 outline-none text-sm"
-        />
-
-        <button
-          onClick={handleSendMessage}
-          className="w-11 h-11 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 transition"
-        >
-          <SendHorizontal size={18} />
-        </button>
+      <div className="border-t bg-white">
+        {selectedFile && (
+          <div className="px-4 py-2 text-sm bg-gray-100">
+            📎 {selectedFile.name}
+          </div>
+        )}
+        <div className="px-4 py-3 flex items-center gap-3">
+          {/* Hidden File Input */}
+          <input
+            type="file"
+            id="fileInput"
+            className="hidden"
+            onChange={(e) => setSelectedFile(e.target.files[0])}
+          />
+          <button
+            onClick={() => document.getElementById("fileInput").click()}
+            className="text-gray-500 hover:text-violet-600"
+          >
+            <Paperclip size={20} />
+          </button>
+          <input
+            type="text"
+            placeholder="Type a message..."
+            value={message}
+            onChange={handleChange}
+            className="flex-1 bg-gray-100 rounded-full px-5 py-3 outline-none text-sm"
+          />
+          <button
+            onClick={handleSendMessage}
+            className="w-11 h-11 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 transition"
+          >
+            <SendHorizontal size={18} />
+          </button>
+        </div>
       </div>
     </div>
   );

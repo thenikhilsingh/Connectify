@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useContext } from "react";
 import ChatCard from "./ChatCard";
+import { AuthContext } from "../context/AuthContext";
 
-export default function ChatList({ friends, setSelectedFriend }) {
+export default function ChatList({
+  friends,
+  selectedFriend,
+  setSelectedFriend,
+}) {
+  const { onlineUsers } = useContext(AuthContext);
+  const isOnline = onlineUsers.includes(selectedFriend);
   return (
     <div className="bg-white rounded-3xl py-5 flex flex-col gap-3">
       <div className="px-5">
@@ -17,11 +24,8 @@ export default function ChatList({ friends, setSelectedFriend }) {
           >
             <ChatCard
               name={`${friend.firstName} ${friend.lastName}`}
-              message="See you tomorrow 🙂"
               avatar={friend?.profilePicture || "/dp.png"}
-              online={friend?.isOnline}
-              time={friend?.lastSeen}
-              unread={2}
+              online={isOnline}
             />
           </div>
         );

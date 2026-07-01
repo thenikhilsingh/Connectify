@@ -1,11 +1,4 @@
-export default function ChatCard({
-  name,
-  message,
-  avatar,
-  online,
-  time,
-  unread,
-}) {
+export default function ChatCard({ name, avatar, online }) {
   return (
     <div className="flex items-center justify-between bg-[#F4F1FF] hover:bg-[#EEE9FF] rounded-2xl p-3 transition-all cursor-pointer">
       <div className="flex items-center gap-3">
@@ -23,20 +16,7 @@ export default function ChatCard({
 
         <div>
           <h3 className="font-bold text-[18px] text-gray-900">{name}</h3>
-          <p className="text-sm text-gray-500 mt-1 truncate max-w-45">
-            {message}
-          </p>
         </div>
-      </div>
-
-      <div className="flex flex-col items-end gap-3">
-        <span className="text-xs text-gray-400">{time}</span>
-
-        {unread > 0 && (
-          <div className="w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-semibold flex items-center justify-center">
-            {unread}
-          </div>
-        )}
       </div>
     </div>
   );

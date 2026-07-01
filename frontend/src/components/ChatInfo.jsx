@@ -1,26 +1,30 @@
 import { BellOff, FileText, ImageIcon } from "lucide-react";
+import { useContext, useEffect, useState } from "react";
+import useAxios from "../hooks/useAxios";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { AuthContext } from "../context/AuthContext";
 
-export default function ChatInfo({ selectedFriendDetails }) {
-  const media = [
-    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200",
-    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=200",
-    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200",
-    "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=200",
-    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200",
-    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=200",
-  ];
+dayjs.extend(relativeTime);
 
-  const files = [
-    {
-      name: "Resume.pdf",
-      size: "2.4 MB",
-    },
-    {
-      name: "Design.fig",
-      size: "14 MB",
-    },
-  ];
+export default function ChatInfo({ selectedFriend, selectedFriendDetails }) {
+  const api = useAxios();
+  const { onlineUsers } = useContext(AuthContext);
+  const [media, setMedia] = useState([]);
+  const [files, setFiles] = useState([]);
 
+  useEffect(() => {
+    if (!selectedFriend) return;
+
+    const getShared = async () => {
+      const response = await api.get(`/api/messages/shared/${selectedFriend}`);
+      console.log(response);
+      setMedia(response.data.media);
+      setFiles(response.data.files);
+    };
+
+    getShared();
+  }, [selectedFriend]);
   return (
     <div className="bg-white rounded-3xl h-full flex flex-col  overflow-y-scroll">
       {/* Profile */}
@@ -37,7 +41,7 @@ export default function ChatInfo({ selectedFriendDetails }) {
 
         <p className="text-gray-500">{selectedFriendDetails?.bio}</p>
 
-        {selectedFriendDetails?.isOnline && (
+        {onlineUsers.includes(selectedFriend) && (
           <div className="flex items-center gap-2 mt-4 text-green-500 text-sm font-medium">
             <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
             Online
@@ -61,12 +65,12 @@ export default function ChatInfo({ selectedFriendDetails }) {
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          {media.map((img, index) => (
+          {media.map((item) => (
             <img
-              key={index}
-              src={img}
+              key={item._id}
+              src={item.file.url}
               alt=""
-              className="w-full aspect-square rounded-xl object-cover cursor-pointer hover:scale-105 transition"
+              className="w-full aspect-square rounded-xl object-cover"
             />
           ))}
         </div>
@@ -80,19 +84,24 @@ export default function ChatInfo({ selectedFriendDetails }) {
         </h3>
 
         <div className="space-y-3">
-          {files.map((file, index) => (
+          {files.map((item) => (
             <div
-              key={index}
-              className="flex items-center justify-between bg-gray-50 rounded-xl p-4"
+              key={item._id}
+              className="flex items-center justify-between bg-gray-50 rounded-xl p-3"
             >
-              <div>
-                <h4 className="font-medium">{file.name}</h4>
-                <p className="text-sm text-gray-500">{file.size}</p>
-              </div>
+              <div className="flex items-center gap-3">
+                <FileText size={22} className="text-violet-600" />
 
-              <button className="text-violet-600 font-medium hover:underline">
-                Open
-              </button>
+                <div>
+                  <h4 className="font-medium text-sm">
+                    {item.file.originalName}
+                  </h4>
+
+                  <p className="text-xs text-gray-500">
+                    {dayjs(item.createdAt).fromNow()}
+                  </p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
