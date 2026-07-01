@@ -15,12 +15,13 @@ import socket from "../socket/socket";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
+dayjs.extend(relativeTime);
 export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
   const api = useAxios();
   const { user, onlineUsers } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-  dayjs.extend(relativeTime);
+  const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef(null);
 
   const getMessages = async () => {
@@ -72,6 +73,40 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
     });
   }, [messages]);
 
+  useEffect(() => {
+    socket.on("typing", () => {
+      setIsTyping(true);
+    });
+
+    socket.on("stopTyping", () => {
+      setIsTyping(false);
+    });
+
+    return () => {
+      socket.off("typing");
+      socket.off("stopTyping");
+    };
+  }, []);
+
+  const typingTimeout = useRef();
+  const handleChange = (e) => {
+    setMessage(e.target.value);
+
+    socket.emit("typing", {
+      sender: user._id,
+      reciever: selectedFriend,
+    });
+
+    clearTimeout(typingTimeout.current);
+
+    typingTimeout.current = setTimeout(() => {
+      socket.emit("stopTyping", {
+        sender: user._id,
+        reciever: selectedFriend,
+      });
+    }, 1000);
+  };
+
   return (
     <div className="bg-white rounded-3xl shadow-sm flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -92,7 +127,9 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
           <div>
             <h2 className="font-bold text-lg text-gray-900">{`${selectedFriendDetails?.firstName} ${selectedFriendDetails?.lastName}`}</h2>
 
-            {onlineUsers.includes(selectedFriend) ? (
+            {isTyping ? (
+              <p className="text-violet-500 text-sm">Typing...</p>
+            ) : onlineUsers.includes(selectedFriend) ? (
               <p className="text-green-500 text-sm">• Online</p>
             ) : (
               <p className="text-gray-500 text-sm">• Offline</p>
@@ -155,7 +192,7 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
           type="text"
           placeholder="Type a message..."
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={handleChange}
           className="flex-1 bg-gray-100 rounded-full px-5 py-3 outline-none text-sm"
         />
 

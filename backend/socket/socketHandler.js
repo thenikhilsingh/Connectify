@@ -31,6 +31,22 @@ function socketHandler(io) {
       }
     });
 
+    socket.on("typing", ({ sender, reciever }) => {
+      const receiverSocket = onlineUsers[reciever];
+
+      if (receiverSocket) {
+        io.to(receiverSocket).emit("typing", sender);
+      }
+    });
+
+    socket.on("stopTyping", ({ sender, reciever }) => {
+      const receiverSocket = onlineUsers[reciever];
+
+      if (receiverSocket) {
+        io.to(receiverSocket).emit("stopTyping", sender);
+      }
+    });
+
     socket.on("disconnect", () => {
       for (const userId in onlineUsers) {
         if (onlineUsers[userId] === socket.id) {
