@@ -17,7 +17,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 
 export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
   const api = useAxios();
-  const { user } = useContext(AuthContext);
+  const { user, onlineUsers } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   dayjs.extend(relativeTime);
@@ -84,14 +84,18 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
               className="w-12 h-12 rounded-full object-cover"
             />
 
-            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
+            {onlineUsers.includes(selectedFriend) && (
+              <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
+            )}
           </div>
 
           <div>
             <h2 className="font-bold text-lg text-gray-900">{`${selectedFriendDetails?.firstName} ${selectedFriendDetails?.lastName}`}</h2>
 
-            {selectedFriendDetails.isOnline && (
+            {onlineUsers.includes(selectedFriend) ? (
               <p className="text-green-500 text-sm">• Online</p>
+            ) : (
+              <p className="text-gray-500 text-sm">• Offline</p>
             )}
           </div>
         </div>

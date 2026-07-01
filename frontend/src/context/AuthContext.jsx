@@ -8,6 +8,7 @@ export default function AuthProvider({ children }) {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [user, setUser] = useState();
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   const storeTokenInLS = (serverToken) => {
     setToken(serverToken);
@@ -61,9 +62,27 @@ export default function AuthProvider({ children }) {
     }
   }, [user]);
 
+  useEffect(() => {
+    socket.on("onlineUsers", (users) => {
+      setOnlineUsers(users);
+    });
+
+    return () => {
+      socket.off("onlineUsers");
+    };
+  }, []);
+
   return (
     <AuthContext.Provider
-      value={{ storeTokenInLS, LogoutUser, isLoggedIn, token, user, setUser }}
+      value={{
+        storeTokenInLS,
+        LogoutUser,
+        isLoggedIn,
+        token,
+        user,
+        setUser,
+        onlineUsers,
+      }}
     >
       {children}
     </AuthContext.Provider>

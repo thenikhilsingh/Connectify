@@ -8,7 +8,7 @@ function socketHandler(io) {
 
     socket.on("join", (userId) => {
       onlineUsers[userId] = socket.id;
-
+      io.emit("onlineUsers", Object.keys(onlineUsers));
       console.log(`${userId} joined`);
 
       console.log(onlineUsers);
@@ -38,7 +38,7 @@ function socketHandler(io) {
           break;
         }
       }
-
+      io.emit("onlineUsers", Object.keys(onlineUsers));
       console.log(onlineUsers);
     });
   });
