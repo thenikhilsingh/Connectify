@@ -11,6 +11,7 @@ const { createServer } = require("http");
 const initSocket = require("./socket/socket");
 const socketHandler = require("./socket/socketHandler");
 const messagesRouter = require("./routes/messagesRouter");
+const groupRouter = require("./routes/groupRouter");
 dotenv.config();
 
 const app = express();
@@ -32,6 +33,7 @@ app.use("/api/people", friendRequestRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/friends", friendsRouter);
 app.use("/api/messages", messagesRouter);
+app.use("/api/groups", groupRouter);
 
 const PORT = process.env.PORT;
 connectDB().then(() => {

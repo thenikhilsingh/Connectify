@@ -10,6 +10,8 @@ export default function Messages() {
   const [friends, setFriends] = useState([]);
   const [selectedFriend, setSelectedFriend] = useState();
   const [selectedFriendDetails, setSelectedFriendDetails] = useState({});
+  const [groups, setGroups] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
   const getFriends = async () => {
     try {
       setLoading(true);
@@ -24,22 +26,43 @@ export default function Messages() {
   };
 
   useEffect(() => {
-    getFriends();
-  }, []);
+    if (!selectedChat) return;
 
-  useEffect(() => {
-    if (!selectedFriend) return;
+    if (selectedChat.type === "friend") {
+      const details = friends.find((friend) => friend._id === selectedChat.id);
 
-    const details = friends.find((friend) => friend._id === selectedFriend);
-    console.log(details);
-    setSelectedFriendDetails(details);
-  }, [selectedFriend, friends]);
+      setSelectedFriendDetails(details);
+    } else {
+      const group = groups.find((g) => g._id === selectedChat.id);
 
-  useEffect(() => {
-    if (friends.length > 0 && !selectedFriend) {
-      setSelectedFriend(friends[0]._id);
+      setSelectedFriendDetails(group);
     }
-  }, [friends, selectedFriend]);
+  }, [selectedChat, friends, groups]);
+
+  useEffect(() => {
+    if (friends.length > 0 && !selectedChat) {
+      setSelectedFriend(friends[0]._id);
+
+      setSelectedChat({
+        type: "friend",
+        id: friends[0]._id,
+      });
+    }
+  }, [friends]);
+
+  const getGroups = async () => {
+    try {
+      const response = await api.get("/api/groups");
+      setGroups(response.data.groups);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getFriends();
+    getGroups();
+  }, []);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -50,8 +73,12 @@ export default function Messages() {
       <div className="w-80">
         <ChatList
           friends={friends}
+          groups={groups}
           selectedFriend={selectedFriend}
           setSelectedFriend={setSelectedFriend}
+          selectedChat={selectedChat}
+          setSelectedChat={setSelectedChat}
+          getGroups={getGroups}
         />
       </div>
 
@@ -59,6 +86,7 @@ export default function Messages() {
       <div className="flex-1">
         <ChatWindow
           selectedFriend={selectedFriend}
+          selectedChat={selectedChat}
           selectedFriendDetails={selectedFriendDetails}
         />
       </div>
@@ -67,6 +95,7 @@ export default function Messages() {
       <div className="w-80">
         <ChatInfo
           selectedFriend={selectedFriend}
+          selectedChat={selectedChat}
           selectedFriendDetails={selectedFriendDetails}
         />
       </div>

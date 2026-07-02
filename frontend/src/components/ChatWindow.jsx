@@ -15,7 +15,11 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
 dayjs.extend(relativeTime);
-export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
+export default function ChatWindow({
+  selectedFriend,
+  selectedFriendDetails,
+  selectedChat,
+}) {
   const api = useAxios();
   const { user, onlineUsers } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
@@ -26,8 +30,14 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
 
   const getMessages = async () => {
     try {
-      const response = await api.get(`/api/messages/${selectedFriend}`);
-      console.log(response);
+      let response;
+
+      if (selectedChat.type === "friend") {
+        response = await api.get(`/api/messages/${selectedFriend}`);
+      } else {
+        response = await api.get(`/api/groups/messages/${selectedChat.id}`);
+      }
+
       setMessages(response.data.messages);
     } catch (error) {
       console.log(error);
@@ -35,10 +45,10 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
   };
 
   useEffect(() => {
-    if (selectedFriend) {
+    if (selectedChat) {
       getMessages();
     }
-  }, [selectedFriend]);
+  }, [selectedChat]);
 
   const handleSendMessage = async () => {
     if (!message.trim() && !selectedFile) return;
@@ -64,11 +74,19 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
       return;
     }
 
-    socket.emit("sendMessage", {
-      sender: user._id,
-      reciever: selectedFriend,
-      text: message,
-    });
+    if (selectedChat.type === "friend") {
+      socket.emit("sendMessage", {
+        sender: user._id,
+        reciever: selectedFriend,
+        text: message,
+      });
+    } else {
+      socket.emit("sendGroupMessage", {
+        sender: user._id,
+        group: selectedChat.id,
+        text: message,
+      });
+    }
 
     setMessage("");
   };
@@ -85,6 +103,16 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
     return () => {
       socket.off("messageSent");
       socket.off("receiveMessage");
+    };
+  }, []);
+
+  useEffect(() => {
+    socket.on("receiveGroupMessage", (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    return () => {
+      socket.off("receiveGroupMessage");
     };
   }, []);
 
@@ -128,6 +156,11 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
     }, 1000);
   };
 
+  useEffect(() => {
+    if (selectedChat?.type === "group") {
+      socket.emit("joinGroup", selectedChat.id);
+    }
+  }, [selectedChat]);
   return (
     <div className="bg-white rounded-3xl shadow-sm flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -146,7 +179,11 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
           </div>
 
           <div>
-            <h2 className="font-bold text-lg text-gray-900">{`${selectedFriendDetails?.firstName} ${selectedFriendDetails?.lastName}`}</h2>
+            <h2 className="font-bold text-lg text-gray-900">
+              {selectedChat?.type === "friend"
+                ? `${selectedFriendDetails?.firstName} ${selectedFriendDetails?.lastName}`
+                : selectedFriendDetails?.name}
+            </h2>
 
             {isTyping ? (
               <p className="text-violet-500 text-sm">Typing...</p>
@@ -199,6 +236,12 @@ export default function ChatWindow({ selectedFriend, selectedFriendDetails }) {
 
                 {(message.text || !message.file?.url) && (
                   <div className="px-4 py-3">
+                    {selectedChat.type === "group" && (
+                      <p className="text-xs font-semibold text-violet-600 mb-1">
+                        {message.sender.firstName}
+                      </p>
+                    )}
+
                     <p>{message.text}</p>
                   </div>
                 )}

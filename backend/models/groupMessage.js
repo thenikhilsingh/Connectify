@@ -1,46 +1,41 @@
 const mongoose = require("mongoose");
 
-const messageSchema = new mongoose.Schema(
+const groupMessageSchema = new mongoose.Schema(
   {
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Group",
+      required: true,
+    },
+
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    reciever: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+
     text: {
       type: String,
-      required: false,
+      default: "",
     },
+
     file: {
       url: {
         type: String,
         default: "",
       },
-
       public_id: {
         type: String,
         default: "",
       },
-
       originalName: {
         type: String,
         default: "",
       },
-
       type: {
         type: String,
         default: "",
       },
-    },
-    group: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Group",
-      default: null,
     },
   },
   {
@@ -48,4 +43,4 @@ const messageSchema = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model("Message", messageSchema);
+module.exports = mongoose.model("GroupMessage", groupMessageSchema);

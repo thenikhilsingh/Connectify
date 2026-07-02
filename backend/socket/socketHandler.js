@@ -1,4 +1,5 @@
 const { saveMessage } = require("../controllers/messagesController");
+const { saveGroupMessage } = require("../controllers/groupController");
 
 const onlineUsers = {};
 
@@ -44,6 +45,22 @@ function socketHandler(io) {
 
       if (receiverSocket) {
         io.to(receiverSocket).emit("stopTyping", sender);
+      }
+    });
+
+    socket.on("joinGroup", (groupId) => {
+      socket.join(groupId);
+
+      console.log(`Joined group ${groupId}`);
+    });
+
+    socket.on("sendGroupMessage", async (data) => {
+      try {
+        const savedMessage = await saveGroupMessage(data);
+
+        io.to(data.group).emit("receiveGroupMessage", savedMessage);
+      } catch (error) {
+        console.log(error);
       }
     });
 

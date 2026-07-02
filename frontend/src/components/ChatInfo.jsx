@@ -7,14 +7,18 @@ import { AuthContext } from "../context/AuthContext";
 
 dayjs.extend(relativeTime);
 
-export default function ChatInfo({ selectedFriend, selectedFriendDetails }) {
+export default function ChatInfo({
+  selectedFriend,
+  selectedFriendDetails,
+  selectedChat,
+}) {
   const api = useAxios();
   const { onlineUsers } = useContext(AuthContext);
   const [media, setMedia] = useState([]);
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
-    if (!selectedFriend) return;
+    if (!selectedFriend || selectedChat?.type !== "friend") return;
 
     const getShared = async () => {
       const response = await api.get(`/api/messages/shared/${selectedFriend}`);
@@ -28,28 +32,73 @@ export default function ChatInfo({ selectedFriend, selectedFriendDetails }) {
   return (
     <div className="bg-white rounded-3xl h-full flex flex-col  overflow-y-scroll">
       {/* Profile */}
-      <div className="flex flex-col items-center py-8 px-6">
-        <img
-          src={selectedFriendDetails?.profilePicture || "/dp.png"}
-          alt=""
-          className="w-24 h-24 rounded-full object-cover"
-        />
 
-        <h2 className="mt-4 text-2xl font-bold">
-          {`${selectedFriendDetails?.firstName} ${selectedFriendDetails?.lastName}`}
-        </h2>
+      {selectedChat?.type === "friend" ? (
+        <div className="flex flex-col items-center py-8 px-6">
+          <img
+            src={selectedFriendDetails?.profilePicture || "/dp.png"}
+            className="w-24 h-24 rounded-full object-cover"
+          />
 
-        <p className="text-gray-500">{selectedFriendDetails?.bio}</p>
+          <h2 className="mt-4 text-2xl font-bold">
+            {selectedFriendDetails?.firstName} {selectedFriendDetails?.lastName}
+          </h2>
 
-        {onlineUsers.includes(selectedFriend) && (
-          <div className="flex items-center gap-2 mt-4 text-green-500 text-sm font-medium">
-            <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
-            Online
-          </div>
-        )}
-      </div>
+          <p className="text-gray-500">{selectedFriendDetails?.bio}</p>
+
+          {onlineUsers.includes(selectedFriend) && (
+            <div className="flex items-center gap-2 mt-4 text-green-500 text-sm font-medium">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+              Online
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center py-8 px-6">
+          <img
+            src={selectedFriendDetails?.groupPicture?.url || "/group.png"}
+            className="w-24 h-24 rounded-full object-cover"
+          />
+
+          <h2 className="mt-4 text-2xl font-bold">
+            {selectedFriendDetails?.name}
+          </h2>
+
+          <p className="text-gray-500">
+            {selectedFriendDetails?.members?.length} members
+          </p>
+        </div>
+      )}
 
       <hr />
+      {selectedChat?.type === "group" && (
+        <div className="p-6">
+          <h3 className="font-semibold mb-4">Members</h3>
+
+          <div className="space-y-4">
+            {selectedFriendDetails?.members?.map((member) => (
+              <div key={member._id} className="flex items-center gap-3">
+                <img
+                  src={member.profilePicture || "/dp.png"}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+
+                <div>
+                  <h4 className="font-medium">
+                    {member.firstName} {member.lastName}
+                  </h4>
+
+                  <p className="text-xs text-gray-500">
+                    {member._id === selectedFriendDetails.admin._id
+                      ? "Admin"
+                      : "Member"}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Shared Media */}
       <div className="p-6">
