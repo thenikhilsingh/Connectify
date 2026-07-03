@@ -64,6 +64,10 @@ function socketHandler(io) {
       }
     });
 
+    socket.on("sendGroupFile", (message) => {
+      io.to(message.group.toString()).emit("receiveGroupMessage", message);
+    });
+
     socket.on("disconnect", () => {
       for (const userId in onlineUsers) {
         if (onlineUsers[userId] === socket.id) {

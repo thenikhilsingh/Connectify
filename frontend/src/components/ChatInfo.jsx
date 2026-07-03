@@ -4,6 +4,7 @@ import useAxios from "../hooks/useAxios";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { AuthContext } from "../context/AuthContext";
+import AddMemberModal from "./AddMemberModal";
 
 dayjs.extend(relativeTime);
 
@@ -11,24 +12,84 @@ export default function ChatInfo({
   selectedFriend,
   selectedFriendDetails,
   selectedChat,
+  refreshGroup,
 }) {
   const api = useAxios();
-  const { onlineUsers } = useContext(AuthContext);
+  const { onlineUsers, user } = useContext(AuthContext);
   const [media, setMedia] = useState([]);
   const [files, setFiles] = useState([]);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
 
   useEffect(() => {
-    if (!selectedFriend || selectedChat?.type !== "friend") return;
+    if (!selectedChat) return;
 
     const getShared = async () => {
-      const response = await api.get(`/api/messages/shared/${selectedFriend}`);
-      console.log(response);
-      setMedia(response.data.media);
-      setFiles(response.data.files);
+      try {
+        let response;
+
+        if (selectedChat.type === "friend") {
+          response = await api.get(`/api/messages/shared/${selectedFriend}`);
+        } else {
+          response = await api.get(`/api/groups/shared/${selectedChat.id}`);
+        }
+
+        setMedia(response.data.media);
+        setFiles(response.data.files);
+      } catch (error) {
+        console.log(error);
+      }
     };
 
     getShared();
-  }, [selectedFriend]);
+  }, [selectedChat]);
+
+  const handleRemoveMember = async (memberId) => {
+    try {
+      await api.patch("/api/groups/remove-member", {
+        groupId: selectedFriendDetails._id,
+        memberId,
+      });
+
+      refreshGroup();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleLeaveGroup = async () => {
+    try {
+      await api.patch("/api/groups/leave", {
+        groupId: selectedFriendDetails._id,
+      });
+
+      refreshGroup();
+      setSelectedChat({
+        type: "friend",
+        id: friends[0]._id,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDeleteGroup = async () => {
+    const confirmDelete = window.confirm("Delete this group permanently?");
+
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(`/api/groups/${selectedFriendDetails._id}`);
+
+      refreshGroup();
+      setSelectedChat({
+        type: "friend",
+        id: friends[0]._id,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="bg-white rounded-3xl h-full flex flex-col  overflow-y-scroll">
       {/* Profile */}
@@ -73,27 +134,52 @@ export default function ChatInfo({
       <hr />
       {selectedChat?.type === "group" && (
         <div className="p-6">
-          <h3 className="font-semibold mb-4">Members</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-semibold">Members</h3>
+
+            {selectedChat?.type === "group" &&
+              selectedFriendDetails?.admin?._id === user._id && (
+                <button
+                  onClick={() => setShowAddMemberModal(true)}
+                  className="text-violet-600 text-sm hover:underline"
+                >
+                  + Add
+                </button>
+              )}
+          </div>
 
           <div className="space-y-4">
             {selectedFriendDetails?.members?.map((member) => (
-              <div key={member._id} className="flex items-center gap-3">
-                <img
-                  src={member.profilePicture || "/dp.png"}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
+              <div
+                key={member._id}
+                className="flex items-center justify-between py-2"
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={member.profilePicture || "/dp.png"}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
 
-                <div>
-                  <h4 className="font-medium">
-                    {member.firstName} {member.lastName}
-                  </h4>
+                  <div>
+                    <p className="font-medium">
+                      {member.firstName} {member.lastName}
+                    </p>
 
-                  <p className="text-xs text-gray-500">
-                    {member._id === selectedFriendDetails.admin._id
-                      ? "Admin"
-                      : "Member"}
-                  </p>
+                    {selectedFriendDetails?.admin?._id === member._id && (
+                      <p className="text-xs text-violet-600">Admin</p>
+                    )}
+                  </div>
                 </div>
+
+                {selectedFriendDetails?.admin?._id === user._id &&
+                  selectedFriendDetails?.admin?._id !== member._id && (
+                    <button
+                      onClick={() => handleRemoveMember(member._id)}
+                      className="text-red-500 text-sm hover:underline"
+                    >
+                      Remove
+                    </button>
+                  )}
               </div>
             ))}
           </div>
@@ -155,6 +241,36 @@ export default function ChatInfo({
           ))}
         </div>
       </div>
+      {/* Group Actions */}
+      {selectedChat?.type === "group" && (
+        <div className="px-6 pb-6 space-y-3">
+          {/* Leave Group - Only Members */}
+          {selectedFriendDetails?.admin?._id !== user._id && (
+            <button
+              onClick={handleLeaveGroup}
+              className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-medium transition"
+            >
+              Leave Group
+            </button>
+          )}
+
+          {/* Delete Group - Only Admin */}
+          {selectedFriendDetails?.admin?._id === user._id && (
+            <button
+              onClick={handleDeleteGroup}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium transition"
+            >
+              Delete Group
+            </button>
+          )}
+        </div>
+      )}
+      <AddMemberModal
+        open={showAddMemberModal}
+        onClose={() => setShowAddMemberModal(false)}
+        group={selectedFriendDetails}
+        refreshGroup={refreshGroup}
+      />
     </div>
   );
 }

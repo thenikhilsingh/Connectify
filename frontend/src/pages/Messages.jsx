@@ -64,6 +64,30 @@ export default function Messages() {
     getGroups();
   }, []);
 
+  const refreshGroups = async () => {
+    const response = await api.get("/api/groups");
+
+    setGroups(response.data.groups);
+
+    if (
+      selectedChat?.type === "group" &&
+      !response.data.groups.find((g) => g._id === selectedChat.id)
+    ) {
+      if (response.data.groups.length > 0) {
+        setSelectedChat({
+          type: "group",
+          id: response.data.groups[0]._id,
+        });
+      } else if (friends.length > 0) {
+        setSelectedFriend(friends[0]._id);
+
+        setSelectedChat({
+          type: "friend",
+          id: friends[0]._id,
+        });
+      }
+    }
+  };
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -97,6 +121,7 @@ export default function Messages() {
           selectedFriend={selectedFriend}
           selectedChat={selectedChat}
           selectedFriendDetails={selectedFriendDetails}
+          refreshGroup={refreshGroups}
         />
       </div>
     </div>

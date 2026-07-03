@@ -30,15 +30,19 @@ export default function ChatWindow({
 
   const getMessages = async () => {
     try {
-      let response;
-
       if (selectedChat.type === "friend") {
-        response = await api.get(`/api/messages/${selectedFriend}`);
-      } else {
-        response = await api.get(`/api/groups/messages/${selectedChat.id}`);
-      }
+        const response = await api.get(`/api/messages/${selectedChat.id}`);
 
-      setMessages(response.data.messages);
+        setMessages(response.data.messages);
+      } else {
+        const response = await api.get(
+          `/api/groups/messages/${selectedChat.id}`,
+        );
+
+        setMessages(response.data.messages);
+
+        socket.emit("joinGroup", selectedChat.id);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -57,13 +61,28 @@ export default function ChatWindow({
       const formData = new FormData();
 
       formData.append("file", selectedFile);
-      formData.append("reciever", selectedFriend);
       formData.append("text", message);
 
+      if (selectedChat.type === "friend") {
+        formData.append("reciever", selectedFriend);
+      } else {
+        formData.append("group", selectedChat.id);
+      }
+
       try {
-        const response = await api.post("/api/messages/upload", formData);
+        const response = await api.post(
+          selectedChat.type === "friend"
+            ? "/api/messages/upload"
+            : "/api/groups/upload",
+          formData,
+        );
 
         setMessages((prev) => [...prev, response.data.newMessage]);
+
+        // Notify other users in the group immediately
+        if (selectedChat.type === "group") {
+          socket.emit("sendGroupFile", response.data.newMessage);
+        }
 
         setSelectedFile(null);
         setMessage("");
