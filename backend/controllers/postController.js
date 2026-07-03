@@ -32,4 +32,16 @@ const createPost = async (req, res) => {
   }
 };
 
-module.exports = { createPost };
+const getPostsOfOnlineUser = async (req, res) => {
+  try {
+    const post = await Post.find({ createdBy: req.user._id }).populate(
+      "createdBy",
+      "firstName lastName profilePicture",
+    );
+    return res.status(200).json({ message: "post loaded successfully", post });
+  } catch (error) {
+    res.status(400).json({ message: "post load failed", error });
+  }
+};
+
+module.exports = { createPost, getPostsOfOnlineUser };

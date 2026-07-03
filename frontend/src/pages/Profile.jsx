@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import useAxios from "../hooks/useAxios";
 import { AuthContext } from "../context/AuthContext";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+dayjs.extend(relativeTime);
 
 export default function Profile() {
   const api = useAxios();
@@ -27,22 +30,21 @@ export default function Profile() {
 
   const [profilePicture, setProfilePicture] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
-  const posts = [
-    {
-      id: 1,
-      text: "Just finished the Connectify profile page 🚀",
-      image: "https://picsum.photos/900/450?1",
-      likes: 142,
-      comments: 19,
-    },
-    {
-      id: 2,
-      text: "Working on real-time messaging with Socket.io 🔥",
-      image: "https://picsum.photos/900/450?2",
-      likes: 96,
-      comments: 12,
-    },
-  ];
+  const [posts, setPosts] = useState([]);
+
+  const getPosts = async () => {
+    try {
+      const response = await api.get("/api/posts/user");
+      console.log(response);
+      setPosts(response.data.post);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
 
   const skills = [
     "React",
@@ -222,7 +224,7 @@ export default function Profile() {
                 <div className="bg-gray-50 rounded-2xl p-5">
                   <div className="flex gap-4">
                     <img
-                      src="https://i.pravatar.cc/200?img=12"
+                      src={user?.profilePicture}
                       className="w-12 h-12 rounded-full"
                     />
 
@@ -239,35 +241,46 @@ export default function Profile() {
 
                 {posts.map((post) => (
                   <div
-                    key={post.id}
+                    key={post._id}
                     className="bg-white border rounded-2xl overflow-hidden"
                   >
                     <div className="p-5">
                       <div className="flex gap-3 items-center">
                         <img
-                          src="https://i.pravatar.cc/200?img=12"
+                          src={post?.createdBy?.profilePicture || "/dp.png"}
                           className="w-12 h-12 rounded-full"
                         />
                         <div>
-                          <h3 className="font-semibold">John Doe</h3>
-                          <p className="text-sm text-gray-500">2 hours ago</p>
+                          <h3 className="font-semibold">{`${post?.createdBy?.firstName} ${post?.createdBy?.lastName}`}</h3>
+                          <p className="text-sm text-gray-500">
+                            {dayjs(post?.createdAt)?.fromNow()}
+                          </p>
                         </div>
                       </div>
 
-                      <p className="mt-4">{post.text}</p>
+                      <p className="mt-4">{post?.caption}</p>
                     </div>
 
-                    <img
-                      src={post.image}
-                      className="w-full h-96 object-cover"
-                    />
+                    {post?.file?.type?.startsWith("image") ? (
+                      <img
+                        src={post.file.url}
+                        alt="Post"
+                        className="w-full  mt-4 object-cover max-h-125"
+                      />
+                    ) : post?.file?.type?.startsWith("video") ? (
+                      <video
+                        src={post.file.url}
+                        controls
+                        className="w-full  mt-4 max-h-125"
+                      />
+                    ) : null}
 
                     <div className="flex justify-between p-5 border-t text-gray-600">
                       <span className="flex items-center gap-2">
-                        <Heart size={18} /> {post.likes}
+                        <Heart size={18} /> {post?.likes.length}
                       </span>
 
-                      <span>{post.comments} Comments</span>
+                      <span>{post?.comments.length} Comments</span>
                     </div>
                   </div>
                 ))}
