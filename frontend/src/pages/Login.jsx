@@ -1,12 +1,12 @@
 import { useContext, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
-  const { storeTokenInLS } = useContext(AuthContext);
+  const { storeTokenInLS, isLoggedIn } = useContext(AuthContext);
   const { errors, setErrors } = useState([]);
   const [formData, setFormData] = useState({
     email: "",
@@ -38,6 +38,10 @@ export default function Login() {
       console.log(error);
     }
   };
+
+  if (isLoggedIn) {
+    return <Navigate to="/app" />;
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f7fb] flex items-center justify-center px-6">
