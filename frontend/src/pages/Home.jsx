@@ -15,7 +15,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 
 export default function Home() {
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn, user } = useContext(AuthContext);
   const api = useAxios();
   const [formData, setFormData] = useState({
     caption: "",
@@ -82,7 +82,7 @@ export default function Home() {
         >
           <div className="flex items-start gap-4">
             <img
-              src="https://i.pravatar.cc/150?img=12"
+              src={user?.profilePicture}
               className="w-12 h-12 rounded-full object-cover"
             />
 

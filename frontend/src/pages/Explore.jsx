@@ -11,31 +11,14 @@ import { useEffect } from "react";
 import useAxios from "../hooks/useAxios";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+dayjs.extend(relativeTime);
 
 export default function Explore() {
   const { user } = useContext(AuthContext);
   const api = useAxios();
   const [tab, setTab] = useState("Posts");
-  const posts = [
-    {
-      id: 1,
-      name: "Emma Watson",
-      time: "2 hrs ago",
-      text: "Enjoying the mountains 🌄",
-      image: "https://picsum.photos/800/450?1",
-      likes: 234,
-      comments: 19,
-    },
-    {
-      id: 2,
-      name: "Noah Brown",
-      time: "5 hrs ago",
-      text: "Late night coding ☕",
-      image: "https://picsum.photos/800/450?2",
-      likes: 143,
-      comments: 8,
-    },
-  ];
   const [people, setPeople] = useState([]);
 
   const getPeople = async () => {
@@ -49,6 +32,21 @@ export default function Explore() {
   };
   useEffect(() => {
     getPeople();
+  }, []);
+
+  const [posts, setPosts] = useState([]);
+  const getPosts = async () => {
+    try {
+      const response = await api.get("/api/posts");
+      console.log(response);
+      setPosts(response.data.post);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getPosts();
   }, []);
 
   const sendRequest = async (id) => {
@@ -136,6 +134,7 @@ export default function Explore() {
       );
     }
   };
+
   return (
     <div className="bg-[#f5f7fb] min-h-screen p-6">
       <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow p-6">
@@ -169,30 +168,47 @@ export default function Explore() {
         </div>
         {tab === "Posts" && (
           <div className="space-y-6 mt-8">
-            {posts.map((p) => (
-              <div key={p.id} className="border rounded-2xl overflow-hidden">
+            {posts.map((post) => (
+              <div
+                key={post?._id}
+                className="border rounded-2xl overflow-hidden"
+              >
                 <div className="p-5">
                   <div className="flex gap-3 items-center">
                     <img
-                      src={`https://i.pravatar.cc/100?img=${p.id + 10}`}
+                      src={post?.createdBy?.profilePicture || "/dp.png"}
                       className="w-12 h-12 rounded-full"
                     />
                     <div>
-                      <h3 className="font-semibold">{p.name}</h3>
-                      <p className="text-sm text-gray-500">{p.time}</p>
+                      <h3 className="font-semibold">{`${post?.createdBy?.firstName} ${post?.createdBy?.lastName}`}</h3>
+                      <p className="text-sm text-gray-500">
+                        {dayjs(post?.createdAt)?.fromNow()}
+                      </p>
                     </div>
                   </div>
-                  <p className="mt-4">{p.text}</p>
+                  <p className="mt-4">{post?.caption}</p>
                 </div>
-                <img src={p.image} className="w-full h-96 object-cover" />
+                {post?.file?.type?.startsWith("image") ? (
+                  <img
+                    src={post.file.url}
+                    alt="Post"
+                    className="w-full  mt-4 object-cover max-h-125"
+                  />
+                ) : post?.file?.type?.startsWith("video") ? (
+                  <video
+                    src={post.file.url}
+                    controls
+                    className="w-full  mt-4 max-h-125"
+                  />
+                ) : null}
                 <div className="flex justify-between p-5 border-t">
                   <button className="flex gap-2">
                     <Heart size={18} />
-                    {p.likes}
+                    {post?.likes.length}
                   </button>
                   <button className="flex gap-2">
                     <MessageCircle size={18} />
-                    {p.comments}
+                    {post?.comments.length}
                   </button>
                 </div>
               </div>
