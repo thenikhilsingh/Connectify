@@ -61,6 +61,7 @@ export default function Explore() {
         text: comment,
       });
       if (response.status === 201) {
+        getPosts();
         setComment("");
       }
     } catch (error) {

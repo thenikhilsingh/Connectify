@@ -153,6 +153,7 @@ export default function Profile() {
         text: comment,
       });
       if (response.status === 201) {
+        getPosts();
         setComment("");
       }
     } catch (error) {
