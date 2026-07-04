@@ -1,3 +1,4 @@
+const Friend = require("../models/friend");
 const Post = require("../models/post");
 const { uploadOnCloudinary } = require("../utils/cloudinary");
 
@@ -44,4 +45,45 @@ const getPostsOfOnlineUser = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getPostsOfOnlineUser };
+const getAllPosts = async (req, res) => {
+  try {
+    const post = await Post.find().populate(
+      "createdBy",
+      "firstName lastName profilePicture",
+    );
+    return res.status(200).json({ message: "post loaded successfully", post });
+  } catch (error) {
+    res.status(400).json({ message: "post load failed", error });
+  }
+};
+
+const getFeedPosts = async (req, res) => {
+  try {
+    const isFriend = await Friend.find({
+      $or: [{ sender: req.user._id }, { reciever: req.user._id }],
+      status: "accepted",
+    });
+
+    const friendIds = isFriend.map((friend) =>
+      friend.sender.equals(req.user._id) ? friend.reciever : friend.sender,
+    );
+
+    // Include your own posts
+    friendIds.push(req.user._id);
+
+    const post = await Post.find({
+      createdBy: { $in: friendIds },
+    }).populate("createdBy", "firstName lastName profilePicture");
+
+    return res.status(200).json({ message: "post loaded successfully", post });
+  } catch (error) {
+    res.status(400).json({ message: "post load failed", error });
+  }
+};
+
+module.exports = {
+  createPost,
+  getPostsOfOnlineUser,
+  getAllPosts,
+  getFeedPosts,
+};

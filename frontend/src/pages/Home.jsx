@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import useAxios from "../hooks/useAxios";
@@ -10,6 +10,9 @@ import {
   Flame,
 } from "lucide-react";
 import { useState } from "react";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+dayjs.extend(relativeTime);
 
 export default function Home() {
   const { isLoggedIn } = useContext(AuthContext);
@@ -48,6 +51,21 @@ export default function Home() {
       console.log(error);
     }
   };
+
+  const [posts, setPosts] = useState([]);
+  const getPosts = async () => {
+    try {
+      const response = await api.get("/api/posts/feed");
+      console.log(response);
+      setPosts(response.data.post);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
 
   if (!isLoggedIn) {
     return <Navigate to="/" />;
@@ -122,34 +140,45 @@ export default function Home() {
           </div>
         </form>
         {/* Demo Feed */}
-        {[1, 2, 3].map((post) => (
+        {posts.map((post) => (
           <div
-            key={post}
+            key={post?._id}
             className="rounded-3xl bg-white shadow-sm border border-gray-100 p-5"
           >
             <div className="flex items-center gap-3">
               <img
-                src={`https://i.pravatar.cc/150?img=${post + 10}`}
+                src={post?.createdBy?.profilePicture || "/dp.png"}
                 alt=""
                 className="h-12 w-12 rounded-full"
               />
 
               <div>
-                <h3 className="font-semibold">Rahul Sharma</h3>
-                <p className="text-sm text-gray-500">2 hours ago</p>
+                <h3 className="font-semibold">{`${post?.createdBy?.firstName} ${post?.createdBy?.lastName}`}</h3>
+                <p className="text-sm text-gray-500">
+                  {dayjs(post?.createdAt)?.fromNow()}
+                </p>
               </div>
             </div>
 
-            <p className="mt-4 text-gray-700">
-              Just finished building my social media app using the MERN stack.
-              🚀
-            </p>
+            <p className="mt-4 text-gray-700">{post?.caption}</p>
 
-            <div className="mt-5 rounded-2xl bg-gray-100 h-64"></div>
+            {post?.file?.type?.startsWith("image") ? (
+              <img
+                src={post.file.url}
+                alt="Post"
+                className="w-full  mt-4 object-cover max-h-125"
+              />
+            ) : post?.file?.type?.startsWith("video") ? (
+              <video
+                src={post.file.url}
+                controls
+                className="w-full  mt-4 max-h-125"
+              />
+            ) : null}
 
             <div className="mt-5 flex justify-between text-sm text-gray-500">
-              <span>❤️ 145 Likes</span>
-              <span>💬 26 Comments</span>
+              <span>❤️ {post?.likes.length} Likes</span>
+              <span>💬 {post?.comments.length} Comments</span>
             </div>
 
             <div className="mt-4 flex justify-between border-t pt-4">
