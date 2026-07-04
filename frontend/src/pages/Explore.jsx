@@ -6,6 +6,7 @@ import {
   UserPlus,
   Check,
   Clock,
+  Send,
 } from "lucide-react";
 import { useEffect } from "react";
 import useAxios from "../hooks/useAxios";
@@ -48,6 +49,24 @@ export default function Explore() {
   useEffect(() => {
     getPosts();
   }, []);
+
+  const [openComments, setOpenComments] = useState(null);
+  const [comment, setComment] = useState("");
+
+  const postComment = async (e, postId) => {
+    e.preventDefault();
+    try {
+      const response = await api.post("/api/posts/comment", {
+        postId,
+        text: comment,
+      });
+      if (response.status === 201) {
+        setComment("");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const sendRequest = async (id) => {
     try {
@@ -201,15 +220,91 @@ export default function Explore() {
                     className="w-full  mt-4 max-h-125"
                   />
                 ) : null}
-                <div className="flex justify-between p-5 border-t">
-                  <button className="flex gap-2">
-                    <Heart size={18} />
-                    {post?.likes.length}
-                  </button>
-                  <button className="flex gap-2">
-                    <MessageCircle size={18} />
-                    {post?.comments.length}
-                  </button>
+                <div className="mt-5 flex justify-between text-sm text-gray-500 px-5">
+                  <span>❤️ {post?.likes.length} Likes</span>
+                  <span>💬 {post?.comments.length} Comments</span>
+                </div>
+
+                <div className="mt-4 border-t pt-3 px-5">
+                  {/* Action Buttons */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition font-medium">
+                      <Heart size={20} />
+                      Like
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setOpenComments(
+                          openComments === post._id ? null : post._id,
+                        )
+                      }
+                      className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-violet-50 hover:text-violet-600 transition font-medium"
+                    >
+                      <MessageCircle size={20} />
+                      Comment
+                    </button>
+                  </div>
+
+                  {/* Comments */}
+                  {openComments === post._id && (
+                    <div className="mt-5 space-y-4 border-t pt-5">
+                      {post.comments.map((comment) => (
+                        <div key={comment._id} className="flex gap-3">
+                          <img
+                            src={comment.author?.profilePicture || "/dp.png"}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+
+                          <div className="flex-1 bg-gray-100 rounded-2xl px-4 py-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-semibold text-sm">
+                                {comment.author?.firstName}{" "}
+                                {comment.author?.lastName}
+                              </h4>
+
+                              <span className="text-xs text-gray-500">
+                                {dayjs(comment.createdAt).fromNow()}
+                              </span>
+                            </div>
+
+                            <p className="mt-1 text-sm text-gray-700">
+                              {comment.text}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add Comment */}
+                      <form
+                        onSubmit={(e) => postComment(e, post?._id)}
+                        className="flex gap-3"
+                      >
+                        <img
+                          src={user?.profilePicture || "/dp.png"}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+
+                        <div className="flex-1 flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Write a comment..."
+                            className="flex-1 rounded-full border border-gray-300 px-4 py-2 outline-none focus:border-violet-500"
+                            name="comment"
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                          />
+
+                          <button
+                            type="submit"
+                            className="bg-violet-600 hover:bg-violet-700 text-white rounded-full w-11 h-11 flex items-center justify-center"
+                          >
+                            <Send size={18} />
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
