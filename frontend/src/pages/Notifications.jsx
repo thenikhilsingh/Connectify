@@ -86,93 +86,65 @@ export default function Notifications() {
 
   return (
     <div className="bg-[#f5f7fb] min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto">
         <h1 className="text-3xl font-bold mb-8">Notifications</h1>
 
-        <div className="grid grid-cols-[1.3fr_1fr] gap-6">
-          {/* Friend Requests */}
+        {/* Friend Requests */}
 
-          <div className="bg-white rounded-3xl shadow p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <UserPlus className="text-violet-600" />
-              <h2 className="text-2xl font-bold">Friend Requests</h2>
-            </div>
-
-            <div className="space-y-5">
-              {friendRequests.map((request) => (
-                <div
-                  key={request?.sender?._id}
-                  className="flex items-center justify-between border rounded-2xl p-4 hover:shadow-md transition"
-                >
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={request?.sender?.profilePicture || "/dp.png"}
-                      className="w-16 h-16 rounded-full object-cover"
-                    />
-
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        {`${request?.sender?.firstName} ${request?.sender?.lastName}`}
-                      </h3>
-
-                      <p className="text-gray-500 text-sm">0 Mutual Friends</p>
-
-                      <p className="text-xs text-gray-400 mt-1">
-                        {request?.updatedAt &&
-                          getRelativeTime(request.updatedAt)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() =>
-                        acceptOrDeniedRequest(request._id, "accepted")
-                      }
-                      className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-xl flex items-center gap-2"
-                    >
-                      <Check size={18} />
-                      Accept
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        acceptOrDeniedRequest(request._id, "rejected")
-                      }
-                      className="bg-gray-100 hover:bg-red-100 text-gray-700 px-5 py-2 rounded-xl flex items-center gap-2"
-                    >
-                      <X size={18} />
-                      Decline
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="bg-white rounded-3xl shadow p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <UserPlus className="text-violet-600" />
+            <h2 className="text-2xl font-bold">Friend Requests</h2>
           </div>
 
-          {/* Recent Notifications */}
-
-          <div className="bg-white rounded-3xl shadow p-6">
-            <h2 className="text-2xl font-bold mb-6">Recent Activity</h2>
-
-            <div className="space-y-5">
-              {notifications.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-4 p-4 rounded-2xl hover:bg-gray-50 transition"
-                >
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                    {item.icon}
-                  </div>
+          <div className="space-y-5">
+            {friendRequests.map((request) => (
+              <div
+                key={request?.sender?._id}
+                className="flex items-center justify-between border rounded-2xl p-4 hover:shadow-md transition"
+              >
+                <div className="flex items-center gap-4">
+                  <img
+                    src={request?.sender?.profilePicture || "/dp.png"}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
 
                   <div>
-                    <p className="font-medium">{item.text}</p>
+                    <h3 className="font-semibold text-lg">
+                      {`${request?.sender?.firstName} ${request?.sender?.lastName}`}
+                    </h3>
 
-                    <p className="text-sm text-gray-500 mt-1">{item.time}</p>
+                    <p className="text-gray-500 text-sm">0 Mutual Friends</p>
+
+                    <p className="text-xs text-gray-400 mt-1">
+                      {request?.updatedAt && getRelativeTime(request.updatedAt)}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() =>
+                      acceptOrDeniedRequest(request._id, "accepted")
+                    }
+                    className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-xl flex items-center gap-2"
+                  >
+                    <Check size={18} />
+                    Accept
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      acceptOrDeniedRequest(request._id, "rejected")
+                    }
+                    className="bg-gray-100 hover:bg-red-100 text-gray-700 px-5 py-2 rounded-xl flex items-center gap-2"
+                  >
+                    <X size={18} />
+                    Decline
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

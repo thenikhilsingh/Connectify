@@ -108,6 +108,38 @@ export default function Profile() {
     getFriends();
   }, []);
 
+  const [payload, setPayload] = useState({
+    caption: "",
+    file: "",
+  });
+
+  const handleChange = (e) => {
+    setPayload({ ...payload, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const data = new FormData();
+      data.append("caption", payload.caption);
+      if (payload.file) {
+        data.append("media", payload.file);
+      }
+
+      const response = await api.post("/api/posts/create", data);
+      if (response.status === 201) {
+        getPosts();
+
+        setFormData({
+          caption: "",
+          file: null,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="bg-[#f5f7fb] min-h-screen p-6">
       <div className="max-w-8xl mx-auto">
@@ -184,19 +216,13 @@ export default function Profile() {
 
               <div className="flex gap-8 mt-6 text-gray-700 font-medium">
                 <p>
-                  <span className="font-bold text-black">24</span> Posts
+                  <span className="font-bold text-black">{posts.length}</span>{" "}
+                  Posts
                 </p>
 
                 <p>
-                  <span className="font-bold text-black">1.2K</span> Followers
-                </p>
-
-                <p>
-                  <span className="font-bold text-black">387</span> Following
-                </p>
-
-                <p>
-                  <span className="font-bold text-black">5.8K</span> Likes
+                  <span className="font-bold text-black">{friends.length}</span>{" "}
+                  Friends
                 </p>
               </div>
             </div>
@@ -221,21 +247,70 @@ export default function Profile() {
 
             {tab === "Posts" && (
               <div className="p-6 space-y-6">
-                <div className="bg-gray-50 rounded-2xl p-5">
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
                   <div className="flex gap-4">
                     <img
-                      src={user?.profilePicture}
-                      className="w-12 h-12 rounded-full"
+                      src={user?.profilePicture || "/dp.png"}
+                      className="w-12 h-12 rounded-full object-cover"
+                      alt=""
                     />
 
-                    <input
-                      placeholder="What's on your mind?"
-                      className="flex-1 rounded-xl border px-4"
-                    />
+                    <form onSubmit={handleSubmit} className="flex-1">
+                      <textarea
+                        rows={3}
+                        placeholder="What's on your mind?"
+                        className="w-full resize-none rounded-2xl bg-gray-50 border border-gray-200 p-4 outline-none focus:border-violet-500"
+                        name="caption"
+                        value={payload.caption}
+                        onChange={handleChange}
+                      />
 
-                    <button className="bg-violet-600 text-white px-6 rounded-xl">
-                      Post
-                    </button>
+                      {/* Media Preview */}
+                      {payload.file && (
+                        <div className="mt-4 rounded-2xl overflow-hidden border border-gray-200">
+                          {payload.file.type.startsWith("image") ? (
+                            <img
+                              src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200"
+                              alt=""
+                              className="w-full h-80 object-cover"
+                            />
+                          ) : (
+                            <video
+                              controls
+                              className="w-full h-80 object-cover"
+                            >
+                              <source src="" />
+                            </video>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="mt-4 flex items-center justify-between border-t pt-4">
+                        <label className="cursor-pointer flex items-center gap-2 rounded-xl px-4 py-2 hover:bg-violet-50 transition text-violet-600 font-medium">
+                          <ImageIcon size={20} />
+                          <span>Add Media</span>
+
+                          <input
+                            type="file"
+                            accept="image/*,video/*"
+                            onChange={(e) =>
+                              setPayload({
+                                ...payload,
+                                file: e.target.files[0],
+                              })
+                            }
+                            className="hidden"
+                          />
+                        </label>
+
+                        <button
+                          type="submit"
+                          className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-xl font-medium transition"
+                        >
+                          Post
+                        </button>
+                      </div>
+                    </form>
                   </div>
                 </div>
 

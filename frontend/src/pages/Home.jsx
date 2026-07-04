@@ -21,6 +21,21 @@ export default function Home() {
     caption: "",
     file: "",
   });
+
+  const [posts, setPosts] = useState([]);
+  const getPosts = async () => {
+    try {
+      const response = await api.get("/api/posts/feed");
+      console.log(response);
+      setPosts(response.data.post);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getPosts();
+  }, []);
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -40,7 +55,7 @@ export default function Home() {
       const response = await api.post("/api/posts/create", data);
 
       if (response.status === 201) {
-        console.log("Post created!", response.data);
+        getPosts();
 
         setFormData({
           caption: "",
@@ -51,21 +66,6 @@ export default function Home() {
       console.log(error);
     }
   };
-
-  const [posts, setPosts] = useState([]);
-  const getPosts = async () => {
-    try {
-      const response = await api.get("/api/posts/feed");
-      console.log(response);
-      setPosts(response.data.post);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getPosts();
-  }, []);
 
   if (!isLoggedIn) {
     return <Navigate to="/" />;
