@@ -8,6 +8,8 @@ import {
   SendHorizontal,
   MessageCircle,
   Flame,
+  Heart,
+  Send,
 } from "lucide-react";
 import { useState } from "react";
 import dayjs from "dayjs";
@@ -61,6 +63,24 @@ export default function Home() {
           caption: "",
           file: null,
         });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const [openComments, setOpenComments] = useState(null);
+  const [comment, setComment] = useState("");
+
+  const postComment = async (e, postId) => {
+    e.preventDefault();
+    try {
+      const response = await api.post("/api/posts/comment", {
+        postId,
+        text: comment,
+      });
+      if (response.status === 201) {
+        setComment("");
       }
     } catch (error) {
       console.log(error);
@@ -181,14 +201,84 @@ export default function Home() {
               <span>💬 {post?.comments.length} Comments</span>
             </div>
 
-            <div className="mt-4 flex justify-between border-t pt-4">
-              <button className="py-2 rounded-xl hover:bg-gray-100 transition">
-                Like
-              </button>
+            <div className="mt-4 border-t pt-3">
+              <div className="grid grid-cols-2 gap-3">
+                <button className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition font-medium">
+                  <Heart size={20} />
+                  Like
+                </button>
 
-              <button className="py-2 rounded-xl hover:bg-gray-100 transition">
-                Comment
-              </button>
+                <button
+                  onClick={() =>
+                    setOpenComments(openComments === post._id ? null : post._id)
+                  }
+                  className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-violet-50 hover:text-violet-600 transition font-medium"
+                >
+                  <MessageCircle size={20} />
+                  Comment
+                </button>
+              </div>
+
+              {/* Comments */}
+              {openComments === post._id && (
+                <div className="mt-5 space-y-4 border-t pt-5">
+                  {/* Single Comment */}
+                  {post?.comments.map((comment) => {
+                    return (
+                      <div className="flex gap-3">
+                        <img
+                          src={comment?.author.profilePicture || "/dp.png"}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+
+                        <div className="flex-1 bg-gray-100 rounded-2xl px-4 py-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold text-sm">
+                              {`${comment.author.firstName} ${comment.author.lastName}`}
+                            </h4>
+
+                            <span className="text-xs text-gray-500">
+                              {dayjs(comment?.createdAt)?.fromNow()}
+                            </span>
+                          </div>
+
+                          <p className="mt-1 text-sm text-gray-700">
+                            {comment.text}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Add Comment */}
+                  <form
+                    onSubmit={(e) => postComment(e, post?._id)}
+                    className="flex gap-3"
+                  >
+                    <img
+                      src={user?.profilePicture || "/dp.png"}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+
+                    <div className="flex-1 flex gap-2">
+                      <input
+                        placeholder="Write a comment..."
+                        className="flex-1 rounded-full border border-gray-300 px-4 py-2 outline-none focus:border-violet-500"
+                        name="comment"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                      />
+
+                      <button
+                        type="submit"
+                        className="bg-violet-600 hover:bg-violet-700 text-white rounded-full w-11 h-11 flex items-center justify-center"
+                      >
+                        <Send size={18} />
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
           </div>
         ))}

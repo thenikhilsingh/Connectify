@@ -1,3 +1,4 @@
+const Comment = require("../models/comment");
 const Friend = require("../models/friend");
 const Post = require("../models/post");
 const { uploadOnCloudinary } = require("../utils/cloudinary");
@@ -35,10 +36,16 @@ const createPost = async (req, res) => {
 
 const getPostsOfOnlineUser = async (req, res) => {
   try {
-    const post = await Post.find({ createdBy: req.user._id }).populate(
-      "createdBy",
-      "firstName lastName profilePicture",
-    );
+    const post = await Post.find({ createdBy: req.user._id })
+      .populate("createdBy", "firstName lastName profilePicture")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "firstName lastName profilePicture",
+        },
+      });
+
     return res.status(200).json({ message: "post loaded successfully", post });
   } catch (error) {
     res.status(400).json({ message: "post load failed", error });
@@ -49,7 +56,15 @@ const getAllPosts = async (req, res) => {
   try {
     const post = await Post.find({
       createdBy: { $ne: req.user._id },
-    }).populate("createdBy", "firstName lastName profilePicture");
+    })
+      .populate("createdBy", "firstName lastName profilePicture")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "firstName lastName profilePicture",
+        },
+      });
     return res.status(200).json({ message: "post loaded successfully", post });
   } catch (error) {
     res.status(400).json({ message: "post load failed", error });
@@ -72,11 +87,42 @@ const getFeedPosts = async (req, res) => {
 
     const post = await Post.find({
       createdBy: { $in: friendIds },
-    }).populate("createdBy", "firstName lastName profilePicture");
+    })
+      .populate("createdBy", "firstName lastName profilePicture")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "firstName lastName profilePicture",
+        },
+      });
 
     return res.status(200).json({ message: "post loaded successfully", post });
   } catch (error) {
     res.status(400).json({ message: "post load failed", error });
+  }
+};
+
+const writeComment = async (req, res) => {
+  try {
+    const { postId, text } = req.body;
+    const author = req.user._id;
+
+    const doComment = await Comment.create({
+      post: postId,
+      text: text,
+      author: author,
+    });
+    await Post.findByIdAndUpdate(postId, {
+      $push: {
+        comments: doComment._id,
+      },
+    });
+    return res
+      .status(201)
+      .json({ message: "comment done successfully", doComment });
+  } catch (error) {
+    res.status(400).json({ message: "comment  failed", error });
   }
 };
 
@@ -85,4 +131,5 @@ module.exports = {
   getPostsOfOnlineUser,
   getAllPosts,
   getFeedPosts,
+  writeComment,
 };
