@@ -1,7 +1,7 @@
 const Comment = require("../models/comment");
 const Friend = require("../models/friend");
 const Post = require("../models/post");
-const { uploadOnCloudinary } = require("../utils/cloudinary");
+const { uploadOnCloudinary, cloudinary } = require("../utils/cloudinary");
 
 const createPost = async (req, res) => {
   try {
@@ -145,6 +145,39 @@ const doLike = async (req, res) => {
   }
 };
 
+const deletePost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(400).json({ message: "post not found", error });
+    }
+
+    const deletedPost = await Post.findOneAndDelete({
+      _id: postId,
+      createdBy: req.user._id,
+    });
+    if (!deletedPost) {
+      return res.status(403).json({
+        message: "You are not authorized to delete this post",
+      });
+    }
+    if (post.file.public_id) {
+      await cloudinary.uploader.destroy(post.file.public_id);
+    }
+    await Comment.deleteMany({
+      _id: {
+        $in: post.comments,
+      },
+    });
+    return res.status(200).json({
+      message: "Post deleted successfully",
+    });
+  } catch (error) {
+    res.status(400).json({ message: "Post deletion  failed", error });
+  }
+};
+
 module.exports = {
   createPost,
   getPostsOfOnlineUser,
@@ -152,4 +185,5 @@ module.exports = {
   getFeedPosts,
   writeComment,
   doLike,
+  deletePost,
 };

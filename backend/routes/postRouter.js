@@ -8,6 +8,7 @@ const {
   getFeedPosts,
   writeComment,
   doLike,
+  deletePost,
 } = require("../controllers/postController");
 
 const postRouter = Router();
@@ -18,5 +19,6 @@ postRouter.get("/", authMiddleware, getAllPosts);
 postRouter.get("/feed", authMiddleware, getFeedPosts);
 postRouter.post("/comment", authMiddleware, writeComment);
 postRouter.patch("/like", authMiddleware, doLike);
+postRouter.delete("/delete/:postId", authMiddleware, deletePost);
 
 module.exports = postRouter;

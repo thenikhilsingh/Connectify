@@ -7,6 +7,7 @@ import {
   Check,
   Clock,
   Send,
+  Trash2
 } from "lucide-react";
 import { useEffect } from "react";
 import useAxios from "../hooks/useAxios";
@@ -74,6 +75,17 @@ export default function Explore() {
       const response = await api.patch("/api/posts/like", {
         postId: postId,
       });
+      if (response.status === 200) {
+        getPosts();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDeletePost = async (id) => {
+    try {
+      const response = await api.delete(`/api/posts/delete/${id}`);
       if (response.status === 200) {
         getPosts();
       }
@@ -241,7 +253,13 @@ export default function Explore() {
 
                 <div className="mt-4 border-t pt-3 px-5">
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div
+                    className={
+                      post.createdBy._id === user._id
+                        ? "grid grid-cols-3 gap-3"
+                        : "grid grid-cols-2 gap-3"
+                    }
+                  >
                     <button
                       onClick={() => handleLike(post._id)}
                       className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition font-medium"
@@ -265,6 +283,15 @@ export default function Explore() {
                       <MessageCircle size={20} />
                       Comment
                     </button>
+                    {post.createdBy._id === user._id && (
+                      <button
+                        onClick={() => handleDeletePost(post._id)}
+                        className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-violet-50 hover:text-violet-600 transition font-medium"
+                      >
+                        <Trash2 size={20} />
+                        Delete
+                      </button>
+                    )}
                   </div>
 
                   {/* Comments */}
