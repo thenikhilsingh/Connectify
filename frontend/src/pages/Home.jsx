@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import BackendHealth from "./BackendHealth";
 dayjs.extend(relativeTime);
 
 export default function Home() {
@@ -30,6 +31,23 @@ export default function Home() {
     caption: "",
     file: "",
   });
+
+  const [backendReady, setBackendReady] = useState(false);
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        const response = await api.get("/api/health");
+
+        if (response.status === 200) {
+          setBackendReady(true);
+        }
+      } catch {
+        setTimeout(checkBackend, 3000); // retry after 3 seconds
+      }
+    };
+
+    checkBackend();
+  }, []);
 
   const [posts, setPosts] = useState([]);
   const getPosts = async () => {
@@ -131,10 +149,6 @@ export default function Home() {
     }
   };
 
-  if (!isLoggedIn) {
-    return <Navigate to="/" />;
-  }
-
   const deleteComment = async (commentId) => {
     setDeletingCommentId(commentId);
 
@@ -151,6 +165,13 @@ export default function Home() {
       setDeletingCommentId(null);
     }
   };
+
+  if (!backendReady) {
+    return <BackendHealth />;
+  }
+  if (!isLoggedIn) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <div className="grid grid-cols-[1fr_320px] gap-6 p-6">

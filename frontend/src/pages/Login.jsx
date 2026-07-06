@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
 import { LoaderCircle } from "lucide-react";
+import BackendHealth from "./BackendHealth";
 
 export default function Login() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -15,6 +16,23 @@ export default function Login() {
     email: "",
     password: "",
   });
+
+  const [backendReady, setBackendReady] = useState(false);
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        const response = await api.get("/api/health");
+
+        if (response.status === 200) {
+          setBackendReady(true);
+        }
+      } catch {
+        setTimeout(checkBackend, 3000); // retry after 3 seconds
+      }
+    };
+
+    checkBackend();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -59,6 +77,10 @@ export default function Login() {
       setGuestLoading(false);
     }
   };
+
+  if (!backendReady) {
+    return <BackendHealth />;
+  }
 
   if (isLoggedIn) {
     return <Navigate to="/app" />;
