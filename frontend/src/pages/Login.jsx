@@ -21,7 +21,7 @@ export default function Login() {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const response = await api.get("/api/health");
+        const response = await axios.get(`${API_BASE_URL}/api/health`);
 
         if (response.status === 200) {
           setBackendReady(true);
