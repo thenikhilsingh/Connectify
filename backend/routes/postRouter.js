@@ -7,6 +7,7 @@ const {
   getAllPosts,
   getFeedPosts,
   writeComment,
+  doLike,
 } = require("../controllers/postController");
 
 const postRouter = Router();
@@ -16,5 +17,6 @@ postRouter.get("/user", authMiddleware, getPostsOfOnlineUser);
 postRouter.get("/", authMiddleware, getAllPosts);
 postRouter.get("/feed", authMiddleware, getFeedPosts);
 postRouter.post("/comment", authMiddleware, writeComment);
+postRouter.patch("/like", authMiddleware, doLike);
 
 module.exports = postRouter;

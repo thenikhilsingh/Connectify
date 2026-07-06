@@ -126,10 +126,30 @@ const writeComment = async (req, res) => {
   }
 };
 
+const doLike = async (req, res) => {
+  try {
+    const { postId } = req.body;
+    const post = await Post.findOne({ _id: postId });
+
+    const alreadyLiked = post.likes.some((id) => id.equals(req.user._id));
+
+    if (alreadyLiked) {
+      post.likes.pull(req.user._id);
+    } else {
+      post.likes.push(req.user._id);
+    }
+    await post.save();
+    return res.status(200).json({ message: "like done successfully" });
+  } catch (error) {
+    res.status(400).json({ message: "like  failed", error });
+  }
+};
+
 module.exports = {
   createPost,
   getPostsOfOnlineUser,
   getAllPosts,
   getFeedPosts,
   writeComment,
+  doLike,
 };

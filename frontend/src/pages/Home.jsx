@@ -88,6 +88,19 @@ export default function Home() {
     }
   };
 
+  const handleLike = async (postId) => {
+    try {
+      const response = await api.patch("/api/posts/like", {
+        postId: postId,
+      });
+      if (response.status === 200) {
+        getPosts();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   if (!isLoggedIn) {
     return <Navigate to="/" />;
   }
@@ -204,8 +217,15 @@ export default function Home() {
 
             <div className="mt-4 border-t pt-3">
               <div className="grid grid-cols-2 gap-3">
-                <button className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition font-medium">
-                  <Heart size={20} />
+                <button
+                  onClick={() => handleLike(post._id)}
+                  className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition font-medium"
+                >
+                  {post.likes.includes(user._id) ? (
+                    <Heart size={20} fill="red" />
+                  ) : (
+                    <Heart size={20} />
+                  )}
                   Like
                 </button>
 
