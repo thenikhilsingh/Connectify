@@ -39,6 +39,14 @@ export default function Login() {
     }
   };
 
+  const handleGuestLogin = async () => {
+    const response = await axios.post(`${API_BASE_URL}/api/auth/guest`);
+    if (response.status === 200) {
+      storeTokenInLS(response.data.token);
+      navigate("/app");
+    }
+  };
+
   if (isLoggedIn) {
     return <Navigate to="/app" />;
   }
@@ -102,7 +110,11 @@ export default function Login() {
           <div className="my-6 text-center text-gray-400">or continue with</div>
 
           <div className="space-y-3">
-            <button type="button" className="w-full border py-3 rounded-xl">
+            <button
+              onClick={handleGuestLogin}
+              type="button"
+              className="w-full border py-3 rounded-xl"
+            >
               Continue as a Guest
             </button>
           </div>

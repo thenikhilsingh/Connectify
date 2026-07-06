@@ -71,4 +71,24 @@ const user = async (req, res) => {
   }
 };
 
-module.exports = { register, login, user };
+const guestLogin = async (req, res) => {
+  try {
+    const guest = await User.findOne({ email: "guest@gmail.com" });
+    if (!guest) {
+      return res.status(404).json({
+        success: false,
+        message: "Guest account not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Guest Login Successfull!",
+      token: await guest.generateToken(),
+      userId: guest._id.toString(),
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: "guest login failed!" });
+  }
+};
+
+module.exports = { register, login, user, guestLogin };
