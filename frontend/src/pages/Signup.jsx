@@ -2,12 +2,14 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { LoaderCircle } from "lucide-react";
 
 export default function Signup() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
   const { storeTokenInLS } = useContext(AuthContext);
   const [errors, setErrors] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -31,6 +33,7 @@ export default function Signup() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       if (formData.password !== formData.confirmPassword) {
         setErrors((prev) => [...prev, { message: "Passwords do not match" }]);
@@ -54,6 +57,8 @@ export default function Signup() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -131,9 +136,12 @@ export default function Signup() {
 
             <button
               type="submit"
+              disabled={loading}
               className="w-full bg-violet-600 hover:bg-violet-700 text-white py-4 rounded-2xl font-semibold text-lg transition"
             >
-              Sign Up
+              {loading && <LoaderCircle size={20} className="animate-spin" />}
+
+              {loading ? "Creating Account..." : "Sign Up"}
             </button>
           </form>
 

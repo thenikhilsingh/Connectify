@@ -8,6 +8,7 @@ import {
   Clock,
   Send,
   Trash2,
+  LoaderCircle,
 } from "lucide-react";
 import { useEffect } from "react";
 import useAxios from "../hooks/useAxios";
@@ -22,6 +23,15 @@ export default function Explore() {
   const api = useAxios();
   const [tab, setTab] = useState("Posts");
   const [people, setPeople] = useState([]);
+  const [likingId, setLikingId] = useState(null);
+  const [commentingId, setCommentingId] = useState(null);
+  const [deletingPostId, setDeletingPostId] = useState(null);
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
+  const [requestLoadingId, setRequestLoadingId] = useState(null);
+  const [requestAction, setRequestAction] = useState({
+    id: null,
+    action: null,
+  });
 
   const getPeople = async () => {
     try {
@@ -56,6 +66,8 @@ export default function Explore() {
 
   const postComment = async (e, postId) => {
     e.preventDefault();
+    setCommentingId(postId);
+
     try {
       const response = await api.post("/api/posts/comment", {
         postId,
@@ -67,10 +79,13 @@ export default function Explore() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setCommentingId(null);
     }
   };
 
   const handleLike = async (postId) => {
+    setLikingId(postId);
     try {
       const response = await api.patch("/api/posts/like", {
         postId: postId,
@@ -80,10 +95,13 @@ export default function Explore() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLikingId(null);
     }
   };
 
   const handleDeletePost = async (id) => {
+    setDeletingPostId(id);
     try {
       const response = await api.delete(`/api/posts/delete/${id}`);
       if (response.status === 200) {
@@ -91,10 +109,13 @@ export default function Explore() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setDeletingPostId(null);
     }
   };
 
   const deleteComment = async (commentId) => {
+    setDeletingCommentId(commentId);
     try {
       const response = await api.delete(
         `/api/posts/comment/delete/${commentId}`,
@@ -104,18 +125,24 @@ export default function Explore() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setDeletingCommentId(null);
     }
   };
 
   const sendRequest = async (id) => {
+    setRequestLoadingId(id);
     try {
       const response = await api.post(`/api/people/sendFriendRequest/${id}`);
       console.log(response);
       if (response.status === 200) {
         getPeople();
+        getRequestInfo();
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setRequestLoadingId(null);
     }
   };
 
@@ -133,15 +160,49 @@ export default function Explore() {
     getRequestInfo();
   }, []);
 
+  const acceptOrDeniedRequest = async (id, action) => {
+    setRequestAction({
+      id,
+      action,
+    });
+    try {
+      const response = await api.put(
+        `/api/people/acceptOrDeniedRequest/${id}`,
+        {
+          status: action,
+        },
+      );
+
+      if (response.status === 200) {
+        getPeople();
+        getRequestInfo();
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setRequestAction({
+        id: null,
+        action: null,
+      });
+    }
+  };
+
   const renderButton = (request, id) => {
     if (!request) {
       return (
         <button
           onClick={() => sendRequest(id)}
+          disabled={requestLoadingId === id}
           className="mt-4 w-full bg-violet-600 text-white rounded-xl py-2 flex justify-center gap-2"
         >
-          <UserPlus size={18} />
-          Add Friend
+          {requestLoadingId === id ? (
+            <LoaderCircle size={18} className="animate-spin" />
+          ) : (
+            <>
+              <UserPlus size={18} />
+              Add Friend
+            </>
+          )}
         </button>
       );
     }
@@ -181,12 +242,42 @@ export default function Explore() {
       // Logged-in user received the request
       return (
         <div className="flex gap-2 mt-4">
-          <button className="flex-1 bg-green-500 text-white rounded-xl py-2">
-            Accept
+          <button
+            disabled={
+              requestAction.id === request._id &&
+              requestAction.action === "accepted"
+            }
+            onClick={() => acceptOrDeniedRequest(request._id, "accepted")}
+            className="flex-1 bg-green-500 hover:bg-green-600 text-white rounded-xl py-2"
+          >
+            {requestAction.id === request._id &&
+            requestAction.action === "accepted" ? (
+              <>
+                <LoaderCircle size={18} className="animate-spin" />
+                Accepting...
+              </>
+            ) : (
+              "Accept"
+            )}
           </button>
 
-          <button className="flex-1 bg-red-500 text-white rounded-xl py-2">
-            Decline
+          <button
+            disabled={
+              requestAction.id === request._id &&
+              requestAction.action === "rejected"
+            }
+            onClick={() => acceptOrDeniedRequest(request._id, "rejected")}
+            className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-xl py-2"
+          >
+            {requestAction.id === request._id &&
+            requestAction.action === "rejected" ? (
+              <>
+                <LoaderCircle size={18} className="animate-spin" />
+                Declining...
+              </>
+            ) : (
+              "Decline"
+            )}
           </button>
         </div>
       );
@@ -275,9 +366,12 @@ export default function Explore() {
                   >
                     <button
                       onClick={() => handleLike(post._id)}
+                      disabled={likingId === post._id}
                       className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition font-medium"
                     >
-                      {post.likes.includes(user._id) ? (
+                      {likingId === post._id ? (
+                        <LoaderCircle size={18} className="animate-spin" />
+                      ) : post.likes.includes(user._id) ? (
                         <Heart size={20} fill="red" />
                       ) : (
                         <Heart size={20} />
@@ -299,10 +393,17 @@ export default function Explore() {
                     {post.createdBy._id === user._id && (
                       <button
                         onClick={() => handleDeletePost(post._id)}
+                        disabled={deletingPostId === post._id}
                         className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-violet-50 hover:text-violet-600 transition font-medium"
                       >
-                        <Trash2 size={20} />
-                        Delete
+                        {deletingPostId === post._id ? (
+                          <LoaderCircle size={18} className="animate-spin" />
+                        ) : (
+                          <>
+                            <Trash2 size={20} />
+                            Delete
+                          </>
+                        )}
                       </button>
                     )}
                   </div>
@@ -330,9 +431,17 @@ export default function Explore() {
                                 </span>
                                 {comment.author._id === user._id && (
                                   <button
+                                    disabled={deletingCommentId === comment._id}
                                     onClick={() => deleteComment(comment._id)}
                                   >
-                                    <Trash2 size={18} color="red" />
+                                    {deletingCommentId === comment._id ? (
+                                      <LoaderCircle
+                                        size={16}
+                                        className="animate-spin text-red-500"
+                                      />
+                                    ) : (
+                                      <Trash2 size={18} color="red" />
+                                    )}
                                   </button>
                                 )}
                               </div>
@@ -367,9 +476,17 @@ export default function Explore() {
 
                           <button
                             type="submit"
+                            disabled={commentingId === post._id}
                             className="bg-violet-600 hover:bg-violet-700 text-white rounded-full w-11 h-11 flex items-center justify-center"
                           >
-                            <Send size={18} />
+                            {commentingId === post._id ? (
+                              <LoaderCircle
+                                size={18}
+                                className="animate-spin text-white"
+                              />
+                            ) : (
+                              <Send size={18} />
+                            )}
                           </button>
                         </div>
                       </form>

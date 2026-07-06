@@ -11,6 +11,7 @@ import {
   MessageCircle,
   Send,
   Trash2,
+  LoaderCircle,
 } from "lucide-react";
 import useAxios from "../hooks/useAxios";
 import { AuthContext } from "../context/AuthContext";
@@ -23,6 +24,12 @@ export default function Profile() {
   const { user, setUser } = useContext(AuthContext);
   const [tab, setTab] = useState("Posts");
   const tabs = ["Posts", "Friends"];
+  const [posting, setPosting] = useState(false);
+  const [likingId, setLikingId] = useState(null);
+  const [commentingId, setCommentingId] = useState(null);
+  const [deletingPostId, setDeletingPostId] = useState(null);
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
+  const [updatingProfile, setUpdatingProfile] = useState(false);
   const [editProfile, setEditProfile] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -71,6 +78,7 @@ export default function Profile() {
     }
   }, [user]);
   const updateProfile = async () => {
+    setUpdatingProfile(true);
     try {
       const data = new FormData();
 
@@ -95,6 +103,8 @@ export default function Profile() {
       console.log(response.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setUpdatingProfile(false);
     }
   };
   const [friends, setFriends] = useState([]);
@@ -122,6 +132,7 @@ export default function Profile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setPosting(true);
     try {
       const data = new FormData();
       data.append("caption", payload.caption);
@@ -140,6 +151,8 @@ export default function Profile() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setPosting(false);
     }
   };
 
@@ -148,6 +161,7 @@ export default function Profile() {
 
   const postComment = async (e, postId) => {
     e.preventDefault();
+    setCommentingId(postId);
     try {
       const response = await api.post("/api/posts/comment", {
         postId,
@@ -159,10 +173,13 @@ export default function Profile() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setCommentingId(null);
     }
   };
 
   const handleLike = async (postId) => {
+    setLikingId(postId);
     try {
       const response = await api.patch("/api/posts/like", {
         postId: postId,
@@ -172,10 +189,13 @@ export default function Profile() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLikingId(null);
     }
   };
 
   const handleDeletePost = async (id) => {
+    setDeletingPostId(id);
     try {
       const response = await api.delete(`/api/posts/delete/${id}`);
       if (response.status === 200) {
@@ -183,10 +203,13 @@ export default function Profile() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setDeletingPostId(null);
     }
   };
 
   const deleteComment = async (commentId) => {
+    setDeletingCommentId(commentId);
     try {
       const response = await api.delete(
         `/api/posts/comment/delete/${commentId}`,
@@ -196,6 +219,8 @@ export default function Profile() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setDeletingCommentId(null);
     }
   };
 
@@ -364,9 +389,20 @@ export default function Profile() {
 
                         <button
                           type="submit"
+                          disabled={posting}
                           className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-xl font-medium transition"
                         >
-                          Post
+                          {posting ? (
+                            <>
+                              <LoaderCircle
+                                size={18}
+                                className="animate-spin"
+                              />
+                              Posting...
+                            </>
+                          ) : (
+                            "Post"
+                          )}
                         </button>
                       </div>
                     </form>
@@ -424,10 +460,13 @@ export default function Profile() {
                         }
                       >
                         <button
+                          disabled={likingId === post._id}
                           onClick={() => handleLike(post._id)}
                           className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition font-medium"
                         >
-                          {post.likes.includes(user._id) ? (
+                          {likingId === post._id ? (
+                            <LoaderCircle size={20} className="animate-spin" />
+                          ) : post.likes.includes(user._id) ? (
                             <Heart size={20} fill="red" />
                           ) : (
                             <Heart size={20} />
@@ -448,11 +487,21 @@ export default function Profile() {
                         </button>
                         {post.createdBy._id === user._id && (
                           <button
+                            disabled={deletingPostId === post._id}
                             onClick={() => handleDeletePost(post._id)}
                             className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-violet-50 hover:text-violet-600 transition font-medium"
                           >
-                            <Trash2 size={20} />
-                            Delete
+                            {deletingPostId === post._id ? (
+                              <LoaderCircle
+                                size={18}
+                                className="animate-spin"
+                              />
+                            ) : (
+                              <>
+                                <Trash2 size={20} />
+                                Delete
+                              </>
+                            )}
                           </button>
                         )}
                       </div>
@@ -482,11 +531,21 @@ export default function Profile() {
                                     </span>
                                     {comment.author._id === user._id && (
                                       <button
+                                        disabled={
+                                          deletingCommentId === comment._id
+                                        }
                                         onClick={() =>
                                           deleteComment(comment._id)
                                         }
                                       >
-                                        <Trash2 size={18} color="red" />
+                                        {deletingCommentId === comment._id ? (
+                                          <LoaderCircle
+                                            size={16}
+                                            className="animate-spin text-red-500"
+                                          />
+                                        ) : (
+                                          <Trash2 size={18} color="red" />
+                                        )}
                                       </button>
                                     )}
                                   </div>
@@ -521,9 +580,17 @@ export default function Profile() {
 
                               <button
                                 type="submit"
+                                disabled={commentingId === post._id}
                                 className="bg-violet-600 hover:bg-violet-700 text-white rounded-full w-11 h-11 flex items-center justify-center"
                               >
-                                <Send size={18} />
+                                {commentingId === post._id ? (
+                                  <LoaderCircle
+                                    size={18}
+                                    className="animate-spin text-white"
+                                  />
+                                ) : (
+                                  <Send size={18} />
+                                )}
                               </button>
                             </div>
                           </form>
@@ -718,9 +785,17 @@ export default function Profile() {
 
               <button
                 onClick={updateProfile}
+                disabled={updatingProfile}
                 className="px-6 py-3 rounded-xl bg-violet-600 text-white hover:bg-violet-700"
               >
-                Save Changes
+                {updatingProfile ? (
+                  <>
+                    <LoaderCircle size={18} className="animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
               </button>
             </div>
           </div>

@@ -2,12 +2,15 @@ import { useContext, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { LoaderCircle } from "lucide-react";
 
 export default function Login() {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const navigate = useNavigate();
   const { storeTokenInLS, isLoggedIn } = useContext(AuthContext);
-  const { errors, setErrors } = useState([]);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [errors, setErrors] = useState([]);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -19,7 +22,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoginLoading(true);
     try {
       const response = await axios.post(
         `${API_BASE_URL}/api/auth/login`,
@@ -36,14 +39,24 @@ export default function Login() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoginLoading(false);
     }
   };
 
   const handleGuestLogin = async () => {
-    const response = await axios.post(`${API_BASE_URL}/api/auth/guest`);
-    if (response.status === 200) {
-      storeTokenInLS(response.data.token);
-      navigate("/app");
+    setGuestLoading(true);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/guest`);
+
+      if (response.status === 200) {
+        storeTokenInLS(response.data.token);
+        navigate("/app");
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setGuestLoading(false);
     }
   };
 
@@ -101,9 +114,14 @@ export default function Login() {
 
             <button
               type="submit"
+              disabled={loginLoading}
               className="w-full bg-violet-600 text-white py-3 rounded-xl hover:bg-violet-700"
             >
-              Login
+              {loginLoading && (
+                <LoaderCircle size={18} className="animate-spin" />
+              )}
+
+              {loginLoading ? "Logging in..." : "Login"}
             </button>
           </form>
 
@@ -112,10 +130,15 @@ export default function Login() {
           <div className="space-y-3">
             <button
               onClick={handleGuestLogin}
+              disabled={guestLoading}
               type="button"
               className="w-full border py-3 rounded-xl"
             >
-              Continue as a Guest
+              {guestLoading && (
+                <LoaderCircle size={18} className="animate-spin" />
+              )}
+
+              {guestLoading ? "Signing in..." : "Continue as a Guest"}
             </button>
           </div>
 

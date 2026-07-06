@@ -1,4 +1,12 @@
-import { UserPlus, Check, X, Heart, MessageCircle, Bell } from "lucide-react";
+import {
+  UserPlus,
+  Check,
+  X,
+  Heart,
+  MessageCircle,
+  Bell,
+  LoaderCircle,
+} from "lucide-react";
 import { useState } from "react";
 import useAxios from "../hooks/useAxios";
 import { useEffect } from "react";
@@ -6,6 +14,10 @@ import { useEffect } from "react";
 export default function Notifications() {
   const api = useAxios();
   const [friendRequests, setFriendRequests] = useState([]);
+  const [requestAction, setRequestAction] = useState({
+    id: null,
+    action: null,
+  });
   const getFriendRequests = async () => {
     try {
       const response = await api.get("/api/people/requestNotifications");
@@ -69,6 +81,10 @@ export default function Notifications() {
   };
 
   const acceptOrDeniedRequest = async (id, action) => {
+    setRequestAction({
+      id,
+      action,
+    });
     try {
       const response = await api.put(
         `/api/people/acceptOrDeniedRequest/${id}`,
@@ -81,6 +97,11 @@ export default function Notifications() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setRequestAction({
+        id: null,
+        action: null,
+      });
     }
   };
 
@@ -124,23 +145,53 @@ export default function Notifications() {
 
                 <div className="flex gap-3">
                   <button
+                    type="button"
+                    disabled={
+                      requestAction.id === request._id &&
+                      requestAction.action === "accepted"
+                    }
                     onClick={() =>
                       acceptOrDeniedRequest(request._id, "accepted")
                     }
-                    className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-xl flex items-center gap-2"
+                    className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Check size={18} />
-                    Accept
+                    {requestAction.id === request._id &&
+                    requestAction.action === "accepted" ? (
+                      <>
+                        <LoaderCircle size={18} className="animate-spin" />
+                        Accepting...
+                      </>
+                    ) : (
+                      <>
+                        <Check size={18} />
+                        Accept
+                      </>
+                    )}
                   </button>
 
                   <button
+                    type="button"
+                    disabled={
+                      requestAction.id === request._id &&
+                      requestAction.action === "rejected"
+                    }
                     onClick={() =>
                       acceptOrDeniedRequest(request._id, "rejected")
                     }
-                    className="bg-gray-100 hover:bg-red-100 text-gray-700 px-5 py-2 rounded-xl flex items-center gap-2"
+                    className="bg-gray-100 hover:bg-red-100 text-gray-700 px-5 py-2 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <X size={18} />
-                    Decline
+                    {requestAction.id === request._id &&
+                    requestAction.action === "rejected" ? (
+                      <>
+                        <LoaderCircle size={18} className="animate-spin" />
+                        Declining...
+                      </>
+                    ) : (
+                      <>
+                        <X size={18} />
+                        Decline
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

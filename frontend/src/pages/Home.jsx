@@ -11,6 +11,7 @@ import {
   Heart,
   Send,
   Trash2,
+  LoaderCircle,
 } from "lucide-react";
 import { useState } from "react";
 import dayjs from "dayjs";
@@ -20,6 +21,11 @@ dayjs.extend(relativeTime);
 export default function Home() {
   const { isLoggedIn, user } = useContext(AuthContext);
   const api = useAxios();
+  const [posting, setPosting] = useState(false);
+  const [likingId, setLikingId] = useState(null);
+  const [commentingId, setCommentingId] = useState(null);
+  const [deletingPostId, setDeletingPostId] = useState(null);
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
   const [formData, setFormData] = useState({
     caption: "",
     file: "",
@@ -45,6 +51,7 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setPosting(true);
 
     try {
       const data = new FormData();
@@ -67,6 +74,8 @@ export default function Home() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setPosting(false);
     }
   };
 
@@ -75,6 +84,7 @@ export default function Home() {
 
   const postComment = async (e, postId) => {
     e.preventDefault();
+    setCommentingId(postId);
     try {
       const response = await api.post("/api/posts/comment", {
         postId,
@@ -86,10 +96,13 @@ export default function Home() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setCommentingId(null);
     }
   };
 
   const handleLike = async (postId) => {
+    setLikingId(postId);
     try {
       const response = await api.patch("/api/posts/like", {
         postId: postId,
@@ -99,10 +112,13 @@ export default function Home() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLikingId(null);
     }
   };
 
   const handleDeletePost = async (id) => {
+    setDeletingPostId(id);
     try {
       const response = await api.delete(`/api/posts/delete/${id}`);
       if (response.status === 200) {
@@ -110,6 +126,8 @@ export default function Home() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setDeletingPostId(null);
     }
   };
 
@@ -118,6 +136,8 @@ export default function Home() {
   }
 
   const deleteComment = async (commentId) => {
+    setDeletingCommentId(commentId);
+
     try {
       const response = await api.delete(
         `/api/posts/comment/delete/${commentId}`,
@@ -127,6 +147,8 @@ export default function Home() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setDeletingCommentId(null);
     }
   };
 
@@ -192,14 +214,16 @@ export default function Home() {
 
             <button
               type="submit"
+              disabled={posting}
               className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-xl font-medium transition"
             >
-              Post
+              {posting && <LoaderCircle size={18} className="animate-spin" />}
+              {posting ? "Posting..." : "Post"}
             </button>
           </div>
         </form>
         {/* Demo Feed */}
-        {posts.map((post) => (
+        {posts?.map((post) => (
           <div
             key={post?._id}
             className="rounded-3xl bg-white shadow-sm border border-gray-100 p-5"
@@ -243,17 +267,21 @@ export default function Home() {
             <div className="mt-4 border-t pt-3">
               <div
                 className={
-                  post.createdBy._id === user._id
+                  post?.createdBy._id === user._id
                     ? "grid grid-cols-3 gap-3"
                     : "grid grid-cols-2 gap-3"
                 }
               >
                 <button
+                  type="button"
                   onClick={() => handleLike(post._id)}
+                  disabled={likingId === post._id}
                   className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition font-medium"
                 >
-                  {post.likes.includes(user._id) ? (
-                    <Heart size={20} fill="red" />
+                  {likingId === post._id ? (
+                    <LoaderCircle className="animate-spin" size={18} />
+                  ) : post.likes.includes(user._id) ? (
+                    <Heart fill="red" size={20} />
                   ) : (
                     <Heart size={20} />
                   )}
@@ -269,51 +297,66 @@ export default function Home() {
                   <MessageCircle size={20} />
                   Comment
                 </button>
-                {post.createdBy._id === user._id && (
+                {post?.createdBy._id === user._id && (
                   <button
-                    onClick={() => handleDeletePost(post._id)}
+                    disabled={deletingPostId === post._id}
+                    onClick={() => handleDeletePost(post?._id)}
                     className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-violet-50 hover:text-violet-600 transition font-medium"
                   >
-                    <Trash2 size={20} />
-                    Delete
+                    {deletingPostId === post._id ? (
+                      <LoaderCircle size={18} className="animate-spin" />
+                    ) : (
+                      <>
+                        <Trash2 size={20} />
+                        Delete
+                      </>
+                    )}
                   </button>
                 )}
               </div>
 
               {/* Comments */}
-              {openComments === post._id && (
+              {openComments === post?._id && (
                 <div className="mt-5 space-y-4 border-t pt-5">
                   {/* Single Comment */}
                   {post?.comments.map((comment) => {
                     return (
                       <div className="flex gap-3">
                         <img
-                          src={comment?.author.profilePicture || "/dp.png"}
+                          src={comment?.author?.profilePicture || "/dp.png"}
                           className="w-10 h-10 rounded-full object-cover"
                         />
 
                         <div className="flex-1 bg-gray-100 rounded-2xl px-4 py-3">
                           <div className="flex items-center justify-between">
                             <h4 className="font-semibold text-sm">
-                              {`${comment.author.firstName} ${comment.author.lastName}`}
+                              {`${comment?.author?.firstName || ""} ${comment?.author?.lastName || ""}`}
                             </h4>
 
                             <div className="flex gap-2">
                               <span className="text-xs text-gray-500">
                                 {dayjs(comment?.createdAt)?.fromNow()}
                               </span>
-                              {comment.author._id === user._id && (
+                              {comment?.author?._id === user?._id && (
                                 <button
+                                  disabled={deletingCommentId === comment._id}
                                   onClick={() => deleteComment(comment._id)}
                                 >
-                                  <Trash2 size={18} color="red" />
+                                  {deletingCommentId === comment._id ? (
+                                    <LoaderCircle
+                                      size={16}
+                                      className="animate-spin text-red-500"
+                                    />
+                                  ) : (
+                                    <Trash2 size={18} color="red" />
+                                  )}
                                 </button>
                               )}
                             </div>
                           </div>
 
                           <p className="mt-1 text-sm text-gray-700">
-                            {comment.text}
+                            {comment?.text}
                           </p>
                         </div>
                       </div>
@@ -322,7 +365,7 @@ export default function Home() {
 
                   {/* Add Comment */}
                   <form
-                    onSubmit={(e) => postComment(e, post?._id)}
+                    onSubmit={(e) => postComment(e, post._id)}
                     className="flex gap-3"
                   >
                     <img
@@ -341,9 +384,17 @@ export default function Home() {
 
                       <button
                         type="submit"
+                        disabled={commentingId === post._id}
                         className="bg-violet-600 hover:bg-violet-700 text-white rounded-full w-11 h-11 flex items-center justify-center"
                       >
-                        <Send size={18} />
+                        {commentingId === post._id ? (
+                          <LoaderCircle
+                            size={18}
+                            className="animate-spin text-white"
+                          />
+                        ) : (
+                          <Send size={18} />
+                        )}
                       </button>
                     </div>
                   </form>
