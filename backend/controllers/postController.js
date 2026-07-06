@@ -178,6 +178,34 @@ const deletePost = async (req, res) => {
   }
 };
 
+const deleteComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({
+        message: "Comment not found",
+      });
+    }
+    if (!comment.author.equals(req.user._id)) {
+      return res.status(403).json({
+        message: "Unauthorized",
+      });
+    }
+    await Comment.findByIdAndDelete(commentId);
+    await Post.findByIdAndUpdate(comment.post, {
+      $pull: {
+        comments: commentId,
+      },
+    });
+    return res.status(200).json({
+      message: "Comment deleted successfully",
+    });
+  } catch (error) {
+    res.status(400).json({ message: "Comment deletion  failed", error });
+  }
+};
+
 module.exports = {
   createPost,
   getPostsOfOnlineUser,
@@ -186,4 +214,5 @@ module.exports = {
   writeComment,
   doLike,
   deletePost,
+  deleteComment,
 };

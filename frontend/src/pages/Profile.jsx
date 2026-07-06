@@ -186,6 +186,19 @@ export default function Profile() {
     }
   };
 
+  const deleteComment = async (commentId) => {
+    try {
+      const response = await api.delete(
+        `/api/posts/comment/delete/${commentId}`,
+      );
+      if (response.status === 200) {
+        getPosts();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="bg-[#f5f7fb] min-h-screen p-6">
       <div className="max-w-8xl mx-auto">
@@ -463,9 +476,20 @@ export default function Profile() {
                                     {comment.author?.lastName}
                                   </h4>
 
-                                  <span className="text-xs text-gray-500">
-                                    {dayjs(comment.createdAt).fromNow()}
-                                  </span>
+                                  <div className="flex gap-2">
+                                    <span className="text-xs text-gray-500">
+                                      {dayjs(comment?.createdAt)?.fromNow()}
+                                    </span>
+                                    {comment.author._id === user._id && (
+                                      <button
+                                        onClick={() =>
+                                          deleteComment(comment._id)
+                                        }
+                                      >
+                                        <Trash2 size={18} color="red" />
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
 
                                 <p className="mt-1 text-sm text-gray-700">

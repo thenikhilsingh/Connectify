@@ -117,6 +117,19 @@ export default function Home() {
     return <Navigate to="/" />;
   }
 
+  const deleteComment = async (commentId) => {
+    try {
+      const response = await api.delete(
+        `/api/posts/comment/delete/${commentId}`,
+      );
+      if (response.status === 200) {
+        getPosts();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="grid grid-cols-[1fr_320px] gap-6 p-6">
       {/* Feed */}
@@ -285,9 +298,18 @@ export default function Home() {
                               {`${comment.author.firstName} ${comment.author.lastName}`}
                             </h4>
 
-                            <span className="text-xs text-gray-500">
-                              {dayjs(comment?.createdAt)?.fromNow()}
-                            </span>
+                            <div className="flex gap-2">
+                              <span className="text-xs text-gray-500">
+                                {dayjs(comment?.createdAt)?.fromNow()}
+                              </span>
+                              {comment.author._id === user._id && (
+                                <button
+                                  onClick={() => deleteComment(comment._id)}
+                                >
+                                  <Trash2 size={18} color="red" />
+                                </button>
+                              )}
+                            </div>
                           </div>
 
                           <p className="mt-1 text-sm text-gray-700">
