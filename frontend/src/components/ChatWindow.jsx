@@ -4,6 +4,7 @@ import {
   MoreVertical,
   Paperclip,
   SendHorizontal,
+  LoaderCircle,
 } from "lucide-react";
 import useAxios from "../hooks/useAxios";
 import { useEffect } from "react";
@@ -27,8 +28,11 @@ export default function ChatWindow({
   const [isTyping, setIsTyping] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const bottomRef = useRef(null);
+  const [loadingMessages, setLoadingMessages] = useState(true);
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   const getMessages = async () => {
+    setLoadingMessages(true);
     try {
       if (selectedChat.type === "friend") {
         const response = await api.get(`/api/messages/${selectedChat.id}`);
@@ -45,6 +49,8 @@ export default function ChatWindow({
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingMessages(false);
     }
   };
 
@@ -56,7 +62,7 @@ export default function ChatWindow({
 
   const handleSendMessage = async () => {
     if (!message.trim() && !selectedFile) return;
-
+    setSendingMessage(true);
     if (selectedFile) {
       const formData = new FormData();
 
@@ -88,6 +94,8 @@ export default function ChatWindow({
         setMessage("");
       } catch (error) {
         console.log(error);
+      } finally {
+        setSendingMessage(false);
       }
 
       return;
@@ -108,6 +116,7 @@ export default function ChatWindow({
     }
 
     setMessage("");
+    setSendingMessage(false);
   };
 
   useEffect(() => {
@@ -231,83 +240,88 @@ export default function ChatWindow({
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 bg-[#FAFAFC]">
-        {messages.map((message) => {
-          return user._id === message.sender ? (
-            <div key={message._id} className="flex justify-end">
-              <div className="bg-violet-600 text-white rounded-2xl overflow-hidden max-w-sm">
-                {message.file?.url &&
-                  (message.file.type.startsWith("image") ? (
-                    <img
-                      src={message.file.url}
-                      alt=""
-                      className="w-full max-h-72 object-cover"
-                    />
-                  ) : (
-                    <a
-                      href={message.file.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block px-4 pt-4 text-white underline"
-                    >
-                      📎 {message.file.originalName}
-                    </a>
-                  ))}
+        {loadingMessages ? (
+          <div>Loading messages...</div>
+        ) : (
+          messages.map((message) => {
+            return user._id === message.sender ? (
+              <div key={message._id} className="flex justify-end">
+                <div className="bg-violet-600 text-white rounded-2xl overflow-hidden max-w-sm">
+                  {message.file?.url &&
+                    (message.file.type.startsWith("image") ? (
+                      <img
+                        src={message.file.url}
+                        alt=""
+                        className="w-full max-h-72 object-cover"
+                      />
+                    ) : (
+                      <a
+                        href={message.file.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block px-4 pt-4 text-white underline"
+                      >
+                        📎 {message.file.originalName}
+                      </a>
+                    ))}
 
-                {(message.text || !message.file?.url) && (
-                  <div className="px-4 py-3">
-                    {selectedChat.type === "group" && (
-                      <p className="text-xs font-semibold text-violet-600 mb-1">
-                        {message.sender.firstName}
-                      </p>
-                    )}
+                  {(message.text || !message.file?.url) && (
+                    <div className="px-4 py-3">
+                      {selectedChat.type === "group" && (
+                        <p className="text-xs font-semibold text-violet-600 mb-1">
+                          {message.sender.firstName}
+                        </p>
+                      )}
 
-                    <p>{message.text}</p>
+                      <p>{message.text}</p>
+                    </div>
+                  )}
+
+                  <div className="px-4 pb-2 flex justify-end">
+                    <span className="text-[11px] text-violet-100">
+                      {dayjs(message.createdAt).fromNow()}
+                    </span>
                   </div>
-                )}
-
-                <div className="px-4 pb-2 flex justify-end">
-                  <span className="text-[11px] text-violet-100">
-                    {dayjs(message.createdAt).fromNow()}
-                  </span>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div key={message._id} className="flex">
-              <div className="bg-white rounded-2xl shadow-sm overflow-hidden max-w-sm">
-                {message.file?.url &&
-                  (message.file.type.startsWith("image") ? (
-                    <img
-                      src={message.file.url}
-                      alt=""
-                      className="w-full max-h-72 object-cover"
-                    />
-                  ) : (
-                    <a
-                      href={message.file.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block px-4 pt-4 text-violet-600 underline"
-                    >
-                      📎 {message.file.originalName}
-                    </a>
-                  ))}
+            ) : (
+              <div key={message._id} className="flex">
+                <div className="bg-white rounded-2xl shadow-sm overflow-hidden max-w-sm">
+                  {message.file?.url &&
+                    (message.file.type.startsWith("image") ? (
+                      <img
+                        src={message.file.url}
+                        alt=""
+                        className="w-full max-h-72 object-cover"
+                      />
+                    ) : (
+                      <a
+                        href={message.file.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block px-4 pt-4 text-violet-600 underline"
+                      >
+                        📎 {message.file.originalName}
+                      </a>
+                    ))}
 
-                {(message.text || !message.file?.url) && (
-                  <div className="px-4 py-3">
-                    <p className="text-gray-800">{message.text}</p>
+                  {(message.text || !message.file?.url) && (
+                    <div className="px-4 py-3">
+                      <p className="text-gray-800">{message.text}</p>
+                    </div>
+                  )}
+
+                  <div className="px-4 pb-2 flex justify-end">
+                    <span className="text-[11px] text-gray-400">
+                      {dayjs(message.createdAt).fromNow()}
+                    </span>
                   </div>
-                )}
-
-                <div className="px-4 pb-2 flex justify-end">
-                  <span className="text-[11px] text-gray-400">
-                    {dayjs(message.createdAt).fromNow()}
-                  </span>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
+
         <div ref={bottomRef}></div>
       </div>
 
@@ -340,10 +354,15 @@ export default function ChatWindow({
             className="flex-1 bg-gray-100 rounded-full px-5 py-3 outline-none text-sm"
           />
           <button
+            disabled={sendingMessage}
             onClick={handleSendMessage}
             className="w-11 h-11 rounded-full bg-violet-600 text-white flex items-center justify-center hover:bg-violet-700 transition"
           >
-            <SendHorizontal size={18} />
+            {sendingMessage ? (
+              <LoaderCircle className="animate-spin" />
+            ) : (
+              <SendHorizontal />
+            )}
           </button>
         </div>
       </div>

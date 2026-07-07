@@ -3,6 +3,7 @@ import ChatWindow from "../components/ChatWindow";
 import ChatInfo from "../components/ChatInfo";
 import useAxios from "../hooks/useAxios";
 import { useEffect, useState } from "react";
+import { LoaderCircle } from "lucide-react";
 
 export default function Messages() {
   const api = useAxios();
@@ -52,10 +53,13 @@ export default function Messages() {
 
   const getGroups = async () => {
     try {
+      setLoading(true);
       const response = await api.get("/api/groups");
       setGroups(response.data.groups);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,7 +93,19 @@ export default function Messages() {
     }
   };
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-[calc(100vh-100px)] items-center justify-center">
+        <div className="bg-white rounded-3xl shadow-lg px-10 py-8 flex flex-col items-center gap-4">
+          <LoaderCircle size={42} className="text-violet-600 animate-spin" />
+
+          <h2 className="text-xl font-semibold">Loading Messages...</h2>
+
+          <p className="text-gray-500 text-sm">
+            Fetching your chats and groups.
+          </p>
+        </div>
+      </div>
+    );
   }
   return (
     <div className="flex h-[calc(100vh-100px)] gap-6 p-5">

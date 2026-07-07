@@ -1,5 +1,6 @@
 import { useState } from "react";
 import useAxios from "../hooks/useAxios";
+import { LoaderCircle } from "lucide-react";
 
 export default function GroupModal({ friends, getGroups, setShowGroupModal }) {
   const api = useAxios();
@@ -7,6 +8,7 @@ export default function GroupModal({ friends, getGroups, setShowGroupModal }) {
   const [groupName, setGroupName] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [groupImage, setGroupImage] = useState(null);
+  const [creatingGroup, setCreatingGroup] = useState(false);
 
   const toggleMember = (id) => {
     if (selectedMembers.includes(id)) {
@@ -17,6 +19,7 @@ export default function GroupModal({ friends, getGroups, setShowGroupModal }) {
   };
 
   const createGroup = async () => {
+    setCreatingGroup(true);
     try {
       const formData = new FormData();
 
@@ -36,6 +39,8 @@ export default function GroupModal({ friends, getGroups, setShowGroupModal }) {
       setShowGroupModal(false);
     } catch (error) {
       console.log(error);
+    } finally {
+      setCreatingGroup(false);
     }
   };
 
@@ -85,10 +90,18 @@ export default function GroupModal({ friends, getGroups, setShowGroupModal }) {
           </button>
 
           <button
+            disabled={creatingGroup}
             onClick={createGroup}
             className="bg-violet-600 text-white px-4 py-2 rounded-lg"
           >
-            Create
+            {creatingGroup ? (
+              <>
+                <LoaderCircle className="animate-spin" size={18} />
+                Creating...
+              </>
+            ) : (
+              "Create"
+            )}
           </button>
         </div>
       </div>

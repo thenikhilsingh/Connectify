@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import useAxios from "../hooks/useAxios";
+import { LoaderCircle } from "lucide-react";
 
 export default function AddMemberModal({ open, onClose, group, refreshGroup }) {
   const api = useAxios();
 
   const [friends, setFriends] = useState([]);
   const [selectedMember, setSelectedMember] = useState("");
+  const [addingMember, setAddingMember] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -29,7 +31,7 @@ export default function AddMemberModal({ open, onClose, group, refreshGroup }) {
 
   const handleAddMember = async () => {
     if (!selectedMember) return;
-
+    setAddingMember(true);
     try {
       await api.patch("/api/groups/add-member", {
         groupId: group._id,
@@ -41,6 +43,8 @@ export default function AddMemberModal({ open, onClose, group, refreshGroup }) {
       onClose();
     } catch (error) {
       console.log(error);
+    } finally {
+      setAddingMember(false);
     }
   };
 
@@ -81,9 +85,17 @@ export default function AddMemberModal({ open, onClose, group, refreshGroup }) {
 
         <button
           onClick={handleAddMember}
+          disabled={addingMember}
           className="px-4 py-2 rounded-xl bg-violet-600 text-white"
         >
-          Add
+          {addingMember ? (
+            <>
+              <LoaderCircle className="animate-spin" size={18} />
+              Adding...
+            </>
+          ) : (
+            "Add"
+          )}
         </button>
       </div>
     </div>

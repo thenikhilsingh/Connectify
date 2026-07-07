@@ -1,4 +1,4 @@
-import { BellOff, FileText, ImageIcon } from "lucide-react";
+import { BellOff, FileText, ImageIcon, LoaderCircle } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import useAxios from "../hooks/useAxios";
 import dayjs from "dayjs";
@@ -19,11 +19,15 @@ export default function ChatInfo({
   const [media, setMedia] = useState([]);
   const [files, setFiles] = useState([]);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
-
+  const [removingMemberId, setRemovingMemberId] = useState(null);
+  const [leavingGroup, setLeavingGroup] = useState(false);
+  const [deletingGroup, setDeletingGroup] = useState(false);
+  const [sharedLoading, setSharedLoading] = useState(false);
   useEffect(() => {
     if (!selectedChat) return;
 
     const getShared = async () => {
+      setSharedLoading(true);
       try {
         let response;
 
@@ -37,6 +41,8 @@ export default function ChatInfo({
         setFiles(response.data.files);
       } catch (error) {
         console.log(error);
+      } finally {
+        setSharedLoading(false);
       }
     };
 
@@ -44,6 +50,7 @@ export default function ChatInfo({
   }, [selectedChat]);
 
   const handleRemoveMember = async (memberId) => {
+    setRemovingMemberId(memberId);
     try {
       await api.patch("/api/groups/remove-member", {
         groupId: selectedFriendDetails._id,
@@ -53,10 +60,13 @@ export default function ChatInfo({
       refreshGroup();
     } catch (error) {
       console.log(error);
+    } finally {
+      setRemovingMemberId(null);
     }
   };
 
   const handleLeaveGroup = async () => {
+    setLeavingGroup(true);
     try {
       await api.patch("/api/groups/leave", {
         groupId: selectedFriendDetails._id,
@@ -69,6 +79,8 @@ export default function ChatInfo({
       });
     } catch (error) {
       console.log(error);
+    } finally {
+      setLeavingGroup(false);
     }
   };
 
@@ -76,7 +88,7 @@ export default function ChatInfo({
     const confirmDelete = window.confirm("Delete this group permanently?");
 
     if (!confirmDelete) return;
-
+    setDeletingGroup(true);
     try {
       await api.delete(`/api/groups/${selectedFriendDetails._id}`);
 
@@ -87,6 +99,8 @@ export default function ChatInfo({
       });
     } catch (error) {
       console.log(error);
+    } finally {
+      setDeletingGroup(false);
     }
   };
 
@@ -174,10 +188,18 @@ export default function ChatInfo({
                 {selectedFriendDetails?.admin?._id === user._id &&
                   selectedFriendDetails?.admin?._id !== member._id && (
                     <button
+                      disabled={removingMemberId === member._id}
                       onClick={() => handleRemoveMember(member._id)}
                       className="text-red-500 text-sm hover:underline"
                     >
-                      Remove
+                      {removingMemberId ? (
+                        <>
+                          <LoaderCircle className="animate-spin" size={18} />
+                          Removing...
+                        </>
+                      ) : (
+                        "Remove"
+                      )}
                     </button>
                   )}
               </div>
@@ -200,14 +222,18 @@ export default function ChatInfo({
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          {media.map((item) => (
-            <img
-              key={item._id}
-              src={item.file.url}
-              alt=""
-              className="w-full aspect-square rounded-xl object-cover"
-            />
-          ))}
+          {sharedLoading ? (
+            <p>Loading shared media...</p>
+          ) : (
+            media.map((item) => (
+              <img
+                key={item._id}
+                src={item.file.url}
+                alt=""
+                className="w-full aspect-square rounded-xl object-cover"
+              />
+            ))
+          )}
         </div>
       </div>
 
@@ -219,26 +245,30 @@ export default function ChatInfo({
         </h3>
 
         <div className="space-y-3">
-          {files.map((item) => (
-            <div
-              key={item._id}
-              className="flex items-center justify-between bg-gray-50 rounded-xl p-3"
-            >
-              <div className="flex items-center gap-3">
-                <FileText size={22} className="text-violet-600" />
+          {sharedLoading ? (
+            <p>Loading shared files...</p>
+          ) : (
+            files.map((item) => (
+              <div
+                key={item._id}
+                className="flex items-center justify-between bg-gray-50 rounded-xl p-3"
+              >
+                <div className="flex items-center gap-3">
+                  <FileText size={22} className="text-violet-600" />
 
-                <div>
-                  <h4 className="font-medium text-sm">
-                    {item.file.originalName}
-                  </h4>
+                  <div>
+                    <h4 className="font-medium text-sm">
+                      {item.file.originalName}
+                    </h4>
 
-                  <p className="text-xs text-gray-500">
-                    {dayjs(item.createdAt).fromNow()}
-                  </p>
+                    <p className="text-xs text-gray-500">
+                      {dayjs(item.createdAt).fromNow()}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
       {/* Group Actions */}
@@ -247,20 +277,36 @@ export default function ChatInfo({
           {/* Leave Group - Only Members */}
           {selectedFriendDetails?.admin?._id !== user._id && (
             <button
+              disabled={leavingGroup}
               onClick={handleLeaveGroup}
               className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-medium transition"
             >
-              Leave Group
+              {leavingGroup ? (
+                <>
+                  <LoaderCircle className="animate-spin" size={18} />
+                  Leaving Group...
+                </>
+              ) : (
+                "Leave Group"
+              )}
             </button>
           )}
 
           {/* Delete Group - Only Admin */}
           {selectedFriendDetails?.admin?._id === user._id && (
             <button
+              disabled={deletingGroup}
               onClick={handleDeleteGroup}
               className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium transition"
             >
-              Delete Group
+              {deletingGroup ? (
+                <>
+                  <LoaderCircle className="animate-spin" size={18} />
+                  Deleting Group...
+                </>
+              ) : (
+                "Delete Group"
+              )}
             </button>
           )}
         </div>
