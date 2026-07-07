@@ -26,7 +26,7 @@ export default function Header() {
         />
 
         <img
-          src={user?.profilePicture || "dp.png"}
+          src={user?.profilePicture || "/dp.png"}
           alt=""
           className="w-10 h-10 rounded-full"
         />
