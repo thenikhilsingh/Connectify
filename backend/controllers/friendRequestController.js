@@ -60,7 +60,9 @@ const requestNotifications = async (req, res) => {
     const notifications = await Friend.find({
       reciever: req.user._id,
       status: "pending",
-    }).populate("sender");
+    })
+      .populate("sender")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,

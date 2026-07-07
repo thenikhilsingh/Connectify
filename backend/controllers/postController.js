@@ -44,7 +44,8 @@ const getPostsOfOnlineUser = async (req, res) => {
           path: "author",
           select: "firstName lastName profilePicture",
         },
-      });
+      })
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({ message: "post loaded successfully", post });
   } catch (error) {
@@ -64,7 +65,8 @@ const getAllPosts = async (req, res) => {
           path: "author",
           select: "firstName lastName profilePicture",
         },
-      });
+      })
+      .sort({ createdAt: -1 });
     return res.status(200).json({ message: "post loaded successfully", post });
   } catch (error) {
     res.status(400).json({ message: "post load failed", error });
@@ -95,7 +97,8 @@ const getFeedPosts = async (req, res) => {
           path: "author",
           select: "firstName lastName profilePicture",
         },
-      });
+      })
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({ message: "post loaded successfully", post });
   } catch (error) {
