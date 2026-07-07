@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Lock, Bell, Shield, LogOut, Eye, EyeOff } from "lucide-react";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Settings() {
+  const { user } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -81,7 +83,14 @@ export default function Settings() {
               />
             </div>
 
-            <button className="mt-2 bg-violet-600 hover:bg-violet-700 text-white px-8 py-3 rounded-xl font-medium transition">
+            <button
+              disabled={user?.isGuest}
+              className={
+                user?.isGuest
+                  ? "cursor-not-allowed mt-2 bg-violet-600 hover:bg-violet-700 text-white px-8 py-3 rounded-xl font-medium transition"
+                  : "mt-2 bg-violet-600 hover:bg-violet-700 text-white px-8 py-3 rounded-xl font-medium transition"
+              }
+            >
               Update Password
             </button>
           </div>

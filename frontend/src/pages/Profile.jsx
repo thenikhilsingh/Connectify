@@ -231,7 +231,7 @@ export default function Profile() {
           <div className="relative rounded-3xl overflow-hidden bg-white shadow">
             <div className="relative h-64 overflow-hidden">
               <img
-                src={user?.coverImage}
+                src={user?.coverImage || "/cover.png"}
                 className="absolute inset-0 w-full h-full object-cover object-center"
               />
 
@@ -388,8 +388,12 @@ export default function Profile() {
 
                         <button
                           type="submit"
-                          disabled={posting}
-                          className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-xl font-medium transition"
+                          disabled={posting || user?.isGuest}
+                          className={
+                            user?.isGuest
+                              ? "cursor-not-allowed bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-xl font-medium transition"
+                              : "bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-xl font-medium transition"
+                          }
                         >
                           {posting ? (
                             <>
@@ -784,8 +788,12 @@ export default function Profile() {
 
               <button
                 onClick={updateProfile}
-                disabled={updatingProfile}
-                className="px-6 py-3 rounded-xl bg-violet-600 text-white hover:bg-violet-700"
+                disabled={updatingProfile || user?.isGuest}
+                className={
+                  user?.isGuest
+                    ? "cursor-not-allowed px-6 py-3 rounded-xl bg-violet-600 text-white hover:bg-violet-700"
+                    : "px-6 py-3 rounded-xl bg-violet-600 text-white hover:bg-violet-700"
+                }
               >
                 {updatingProfile ? (
                   <>
