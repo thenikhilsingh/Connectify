@@ -12,10 +12,14 @@ import {
   Send,
   Trash2,
   LoaderCircle,
+  CalendarDays,
+  CloudSun,
+  BarChart3,
 } from "lucide-react";
 import { useState } from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import axios from "axios";
 dayjs.extend(relativeTime);
 
 export default function Home() {
@@ -147,6 +151,54 @@ export default function Home() {
       setDeletingCommentId(null);
     }
   };
+
+  const [weather, setWeather] = useState(null);
+
+  const getWeather = async (lat, lon) => {
+    try {
+      const response = await axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${import.meta.env.VITE_WEATHER_API_KEY}&units=metric`,
+      );
+
+      setWeather(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      console.log("Geolocation is not supported.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        getWeather(latitude, longitude);
+      },
+      (error) => {
+        console.log(error);
+      },
+    );
+  }, []);
+
+  const [quote, setQuote] = useState(null);
+
+  useEffect(() => {
+    const getQuote = async () => {
+      try {
+        const response = await axios.get("https://dummyjson.com/quotes/random");
+
+        setQuote(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getQuote();
+  }, []);
 
   if (!isLoggedIn) {
     return <Navigate to="/" />;
@@ -410,34 +462,71 @@ export default function Home() {
       </div>
 
       {/* Right Sidebar */}
-      <div className="space-y-5 sticky h-fit">
-        {/* Online Friends */}
-        <div className="rounded-3xl bg-white shadow-sm border border-gray-100 p-5">
-          <h2 className="font-semibold text-lg mb-5">🟢 Online Friends</h2>
+      <div className="space-y-5 sticky top-5 h-fit">
+        {/* Today's Date */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <CalendarDays className="text-violet-600" />
+            <h2 className="font-semibold text-lg">Today</h2>
+          </div>
 
-          <div className="space-y-4">
-            {["Rahul", "Aman", "Priya", "Karan", "Ankit"].map((user, index) => (
-              <div key={user} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <img
-                      src={`https://i.pravatar.cc/100?img=${index + 30}`}
-                      alt=""
-                      className="h-10 w-10 rounded-full"
-                    />
+          <h3 className="text-xl font-bold">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          </h3>
 
-                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></span>
-                  </div>
+          <p className="text-3xl font-bold text-violet-600 mt-3">
+            {new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+        </div>
 
-                  <span className="font-medium">{user}</span>
+        {/* Weather */}
+        {weather && (
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <CloudSun className="text-yellow-500" />
+                  <h2 className="font-semibold text-lg">Weather</h2>
                 </div>
 
-                <button className="text-violet-600 hover:text-violet-800">
-                  <MessageCircle size={18} />
-                </button>
+                <p className="text-sm text-gray-500 mt-2">
+                  📍 {weather?.name}, {weather?.sys?.country}
+                </p>
+
+                <h1 className="text-5xl font-bold mt-3">
+                  {Math.round(weather?.main?.temp)}°
+                </h1>
+
+                <p className="text-gray-500 capitalize">
+                  {weather?.weather?.[0]?.description}
+                </p>
+
+                <p className="text-sm text-gray-400 mt-2">
+                  Feels like {Math.round(weather?.main?.feels_like)}°
+                </p>
               </div>
-            ))}
+
+              <img
+                src={`https://openweathermap.org/img/wn/${weather?.weather?.[0]?.icon}@2x.png`}
+                alt="Weather"
+              />
+            </div>
           </div>
+        )}
+
+        {/* Quote */}
+        <div className="bg-linear-to-br from-violet-600 to-purple-500 rounded-3xl text-white p-6">
+          <h3 className="font-semibold mb-3">💡 Today's Motivation</h3>
+
+          <p>"{quote?.quote}"</p>
+          <p>- {quote?.author}</p>
         </div>
       </div>
     </div>
