@@ -192,8 +192,12 @@ export default function Explore() {
       return (
         <button
           onClick={() => sendRequest(id)}
-          disabled={requestLoadingId === id}
-          className="mt-4 w-full bg-violet-600 text-white rounded-xl py-2 flex justify-center gap-2"
+          disabled={requestLoadingId === id || user?.isGuest}
+          className={
+            user?.isGuest
+              ? "cursor-not-allowed mt-4 w-full bg-violet-600 text-white rounded-xl py-2 flex justify-center gap-2"
+              : "mt-4 w-full bg-violet-600 text-white rounded-xl py-2 flex justify-center gap-2"
+          }
         >
           {requestLoadingId === id ? (
             <LoaderCircle size={18} className="animate-spin" />
@@ -366,8 +370,12 @@ export default function Explore() {
                   >
                     <button
                       onClick={() => handleLike(post._id)}
-                      disabled={likingId === post._id}
-                      className="flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition font-medium"
+                      disabled={likingId === post._id || user?.isGuest}
+                      className={
+                        user?.isGuest
+                          ? "cursor-not-allowed flex items-center justify-center gap-2 py-3 rounded-xl    font-medium"
+                          : "flex items-center justify-center gap-2 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition font-medium"
+                      }
                     >
                       {likingId === post._id ? (
                         <LoaderCircle size={18} className="animate-spin" />
@@ -476,8 +484,14 @@ export default function Explore() {
 
                           <button
                             type="submit"
-                            disabled={commentingId === post._id}
-                            className="bg-violet-600 hover:bg-violet-700 text-white rounded-full w-11 h-11 flex items-center justify-center"
+                            disabled={
+                              commentingId === post._id || user?.isGuest
+                            }
+                            className={
+                              user.isGuest
+                                ? "cursor-not-allowed bg-violet-600 hover:bg-violet-700 text-white rounded-full w-11 h-11 flex items-center justify-center"
+                                : "bg-violet-600 hover:bg-violet-700 text-white rounded-full w-11 h-11 flex items-center justify-center"
+                            }
                           >
                             {commentingId === post._id ? (
                               <LoaderCircle

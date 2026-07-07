@@ -3,10 +3,12 @@ import ChatWindow from "../components/ChatWindow";
 import ChatInfo from "../components/ChatInfo";
 import useAxios from "../hooks/useAxios";
 import { useEffect, useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Messages() {
   const api = useAxios();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [friends, setFriends] = useState([]);
   const [selectedFriend, setSelectedFriend] = useState();
@@ -103,6 +105,32 @@ export default function Messages() {
           <p className="text-gray-500 text-sm">
             Fetching your chats and groups.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (friends?.length === 0) {
+    return (
+      <div className="flex h-[calc(100vh-100px)] items-center justify-center bg-[#f5f7fb]">
+        <div className="bg-white rounded-3xl shadow-lg p-10 max-w-md w-full text-center">
+          <div className="w-24 h-24 mx-auto rounded-full bg-violet-100 flex items-center justify-center">
+            <Users className="w-12 h-12 text-violet-600" />
+          </div>
+
+          <h2 className="text-2xl font-bold mt-6">No Friends Yet</h2>
+
+          <p className="text-gray-500 mt-3 leading-7">
+            You need at least one friend before you can start chatting or create
+            a group.
+          </p>
+
+          <button
+            onClick={() => navigate("/app/explore")}
+            className="mt-8 bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-xl transition"
+          >
+            Find Friends
+          </button>
         </div>
       </div>
     );

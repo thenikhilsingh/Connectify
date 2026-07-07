@@ -232,7 +232,6 @@ export default function Profile() {
             <div className="relative h-64 overflow-hidden">
               <img
                 src={user?.coverImage}
-                alt="Cover"
                 className="absolute inset-0 w-full h-full object-cover object-center"
               />
 
@@ -252,7 +251,7 @@ export default function Profile() {
                   <div className="flex items-end gap-6">
                     <div className="relative -mt-20">
                       <img
-                        src={user?.profilePicture}
+                        src={user?.profilePicture || "/dp.png"}
                         className="w-44 h-44 rounded-full border-[5px] border-white object-cover shadow-lg"
                       />
 

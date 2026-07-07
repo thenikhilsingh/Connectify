@@ -163,7 +163,7 @@ export default function Home() {
         >
           <div className="flex items-start gap-4">
             <img
-              src={user?.profilePicture}
+              src={user?.profilePicture || "/dp.png"}
               className="w-12 h-12 rounded-full object-cover"
             />
 
@@ -214,8 +214,12 @@ export default function Home() {
 
             <button
               type="submit"
-              disabled={posting}
-              className="bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-xl font-medium transition"
+              disabled={posting || user?.isGuest}
+              className={
+                user?.isGuest
+                  ? "cursor-not-allowed bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-xl font-medium transition"
+                  : "bg-violet-600 hover:bg-violet-700 text-white px-6 py-2 rounded-xl font-medium transition"
+              }
             >
               {posting && <LoaderCircle size={18} className="animate-spin" />}
               {posting ? "Posting..." : "Post"}
