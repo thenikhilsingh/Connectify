@@ -221,7 +221,7 @@ export default function Home() {
 
             <textarea
               rows={4}
-              placeholder="What's on your mind, Nikhil?"
+              placeholder={`What's on your mind, ${user?.firstName || "User"}?`}
               className="flex-1 resize-none rounded-2xl bg-gray-50 p-4 outline-none border border-gray-200 focus:border-violet-500"
               name="caption"
               value={formData.caption}
