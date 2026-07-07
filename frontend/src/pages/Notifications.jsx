@@ -7,12 +7,14 @@ import {
   Bell,
   LoaderCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import useAxios from "../hooks/useAxios";
 import { useEffect } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Notifications() {
   const api = useAxios();
+  const { getNotificationCount } = useContext(AuthContext);
   const [friendRequests, setFriendRequests] = useState([]);
   const [requestAction, setRequestAction] = useState({
     id: null,
@@ -94,6 +96,7 @@ export default function Notifications() {
       );
       if (response.status === 200) {
         getFriendRequests();
+        getNotificationCount();
       }
     } catch (error) {
       console.log(error);

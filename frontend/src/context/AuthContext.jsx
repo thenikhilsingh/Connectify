@@ -9,6 +9,7 @@ export default function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [user, setUser] = useState();
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const storeTokenInLS = (serverToken) => {
     setToken(serverToken);
@@ -72,6 +73,22 @@ export default function AuthProvider({ children }) {
     };
   }, []);
 
+  const getNotificationCount = async () => {
+    try {
+      const response = await api.get("/api/people/requestNotifications");
+
+      setNotificationCount(response.data.notifications.length);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      getNotificationCount();
+    }
+  }, [token]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -82,6 +99,8 @@ export default function AuthProvider({ children }) {
         user,
         setUser,
         onlineUsers,
+        notificationCount,
+        getNotificationCount,
       }}
     >
       {children}

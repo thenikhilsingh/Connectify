@@ -12,7 +12,7 @@ import { AuthContext } from "../context/AuthContext";
 import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
-  const { LogoutUser, user } = useContext(AuthContext);
+  const { LogoutUser, user, notificationCount } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const navLinkClass = ({ isActive }) =>
@@ -46,7 +46,15 @@ export default function Sidebar() {
 
           <li>
             <NavLink to="/app/notifications" className={navLinkClass}>
-              <Bell size={20} />
+              <div className="relative">
+                <Bell size={20} />
+
+                {notificationCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-5 h-5 flex items-center justify-center">
+                    {notificationCount}
+                  </span>
+                )}
+              </div>
               <span>Notifications</span>
             </NavLink>
           </li>
