@@ -17,10 +17,12 @@ import useAxios from "../hooks/useAxios";
 import { AuthContext } from "../context/AuthContext";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { useNavigate } from "react-router-dom";
 dayjs.extend(relativeTime);
 
 export default function Profile() {
   const api = useAxios();
+  const navigate = useNavigate();
   const { user, setUser } = useContext(AuthContext);
   const [tab, setTab] = useState("Posts");
   const tabs = ["Posts", "Friends"];
@@ -640,7 +642,10 @@ export default function Profile() {
                           0 mutual friends
                         </p>
 
-                        <button className="w-full mt-4 bg-violet-100 text-violet-700 py-2 rounded-xl hover:bg-violet-200 transition">
+                        <button
+                          onClick={() => navigate(`/app/profile/${friend._id}`)}
+                          className="w-full mt-4 bg-violet-100 text-violet-700 py-2 rounded-xl hover:bg-violet-200 transition"
+                        >
                           View Profile
                         </button>
                       </div>

@@ -1,5 +1,7 @@
 const User = require("../models/user");
 const { uploadOnCloudinary, cloudinary } = require("../utils/cloudinary");
+const Post = require("../models/post");
+const Friend = require("../models/friend");
 
 const updateProfile = async (req, res) => {
   try {
@@ -85,4 +87,84 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { updateProfile };
+const getUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const loggedInUser = req.user._id;
+
+    // User Details
+    const user = await User.findById(id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // User Posts
+    const posts = await Post.find({ createdBy: id })
+      .populate("createdBy", "firstName lastName profilePicture")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "firstName lastName profilePicture",
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    // Friends
+    const friendsData = await Friend.find({
+      status: "accepted",
+      $or: [{ sender: id }, { reciever: id }],
+    })
+      .populate("sender", "firstName lastName profilePicture")
+      .populate("reciever", "firstName lastName profilePicture");
+
+    const friends = friendsData.map((friend) =>
+      friend.sender._id.equals(id) ? friend.reciever : friend.sender,
+    );
+
+    // Friend Status
+    const relation = await Friend.findOne({
+      $or: [
+        { sender: loggedInUser, reciever: id },
+        { sender: id, reciever: loggedInUser },
+      ],
+    });
+
+    let friendStatus = "none";
+
+    if (relation) {
+      if (relation.status === "accepted") {
+        friendStatus = "accepted";
+      } else if (
+        relation.status === "pending" &&
+        relation.sender.equals(loggedInUser)
+      ) {
+        friendStatus = "pending";
+      } else if (
+        relation.status === "pending" &&
+        relation.reciever.equals(loggedInUser)
+      ) {
+        friendStatus = "received";
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      user,
+      posts,
+      friends,
+      friendStatus,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { updateProfile, getUserProfile };

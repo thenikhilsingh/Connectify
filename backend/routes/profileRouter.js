@@ -1,6 +1,9 @@
 const Router = require("express");
 const authMiddleware = require("../middlewares/authMiddleware");
-const { updateProfile } = require("../controllers/profileController");
+const {
+  updateProfile,
+  getUserProfile,
+} = require("../controllers/profileController");
 const upload = require("../middlewares/multerMiddleware");
 
 const profileRouter = Router();
@@ -14,5 +17,7 @@ profileRouter.patch(
   ]),
   updateProfile,
 );
+
+profileRouter.get("/:id", authMiddleware, getUserProfile);
 
 module.exports = profileRouter;

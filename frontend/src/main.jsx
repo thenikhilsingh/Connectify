@@ -19,6 +19,7 @@ import Profile from "./pages/Profile.jsx";
 import Explore from "./pages/Explore.jsx";
 import Notifications from "./pages/Notifications.jsx";
 import Settings from "./pages/Settings.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -32,6 +33,7 @@ const router = createBrowserRouter(
         <Route index element={<Home />}></Route>
         <Route path="messages" element={<Messages />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="profile/:id" element={<UserProfile />} />
         <Route path="explore" element={<Explore />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<Settings />} />

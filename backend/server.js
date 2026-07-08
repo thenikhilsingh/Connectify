@@ -32,7 +32,7 @@ app.use("/api/health", indexRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/people", friendRequestRouter);
 app.use("/api/profile", profileRouter);
-app.use("/api/friends", friendsRouter);
+app.use("/api/friends", friendsRouter); 
 app.use("/api/messages", messagesRouter);
 app.use("/api/groups", groupRouter);
 app.use("/api/posts", postRouter);
