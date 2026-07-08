@@ -75,7 +75,14 @@ export default function AuthProvider({ children }) {
 
   const getNotificationCount = async () => {
     try {
-      const response = await api.get("/api/people/requestNotifications");
+      const response = await axios.get(
+        `${API_BASE_URL}/api/people/requestNotifications`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
       setNotificationCount(response.data.notifications.length);
     } catch (error) {
