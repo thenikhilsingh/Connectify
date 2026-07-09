@@ -131,7 +131,7 @@ export default function ChatInfo({
       ) : (
         <div className="flex flex-col items-center py-8 px-6">
           <img
-            src={selectedFriendDetails?.groupPicture?.url || "/group.png"}
+            src={selectedFriendDetails?.groupPicture?.url || "/groupDp.png"}
             className="w-24 h-24 rounded-full object-cover"
           />
 

@@ -65,7 +65,7 @@ export default function ChatList({
           className="px-5 py-3 flex items-center gap-3 cursor-pointer hover:bg-gray-100"
         >
           <img
-            src={group.groupPicture?.url || "/group.png"}
+            src={group.groupPicture?.url || "/groupDp.png"}
             className="w-12 h-12 rounded-full object-cover"
           />
 

@@ -122,83 +122,88 @@ export default function Notifications() {
           </div>
 
           <div className="space-y-5">
-            {friendRequests.map((request) => (
-              <div
-                key={request?.sender?._id}
-                className="flex items-center justify-between border rounded-2xl p-4 hover:shadow-md transition"
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src={request?.sender?.profilePicture || "/dp.png"}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
+            {friendRequests.length === 0 ? (
+              <div>Currently, there is no friend request.</div>
+            ) : (
+              friendRequests.map((request) => (
+                <div
+                  key={request?.sender?._id}
+                  className="flex items-center justify-between border rounded-2xl p-4 hover:shadow-md transition"
+                >
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={request?.sender?.profilePicture || "/dp.png"}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
 
-                  <div>
-                    <h3 className="font-semibold text-lg">
-                      {`${request?.sender?.firstName} ${request?.sender?.lastName}`}
-                    </h3>
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        {`${request?.sender?.firstName} ${request?.sender?.lastName}`}
+                      </h3>
 
-                    <p className="text-gray-500 text-sm">0 Mutual Friends</p>
+                      <p className="text-gray-500 text-sm">0 Mutual Friends</p>
 
-                    <p className="text-xs text-gray-400 mt-1">
-                      {request?.updatedAt && getRelativeTime(request.updatedAt)}
-                    </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {request?.updatedAt &&
+                          getRelativeTime(request.updatedAt)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      disabled={
+                        requestAction.id === request._id &&
+                        requestAction.action === "accepted"
+                      }
+                      onClick={() =>
+                        acceptOrDeniedRequest(request._id, "accepted")
+                      }
+                      className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {requestAction.id === request._id &&
+                      requestAction.action === "accepted" ? (
+                        <>
+                          <LoaderCircle size={18} className="animate-spin" />
+                          Accepting...
+                        </>
+                      ) : (
+                        <>
+                          <Check size={18} />
+                          Accept
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={
+                        requestAction.id === request._id &&
+                        requestAction.action === "rejected"
+                      }
+                      onClick={() =>
+                        acceptOrDeniedRequest(request._id, "rejected")
+                      }
+                      className="bg-gray-100 hover:bg-red-100 text-gray-700 px-5 py-2 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {requestAction.id === request._id &&
+                      requestAction.action === "rejected" ? (
+                        <>
+                          <LoaderCircle size={18} className="animate-spin" />
+                          Declining...
+                        </>
+                      ) : (
+                        <>
+                          <X size={18} />
+                          Decline
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    disabled={
-                      requestAction.id === request._id &&
-                      requestAction.action === "accepted"
-                    }
-                    onClick={() =>
-                      acceptOrDeniedRequest(request._id, "accepted")
-                    }
-                    className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {requestAction.id === request._id &&
-                    requestAction.action === "accepted" ? (
-                      <>
-                        <LoaderCircle size={18} className="animate-spin" />
-                        Accepting...
-                      </>
-                    ) : (
-                      <>
-                        <Check size={18} />
-                        Accept
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={
-                      requestAction.id === request._id &&
-                      requestAction.action === "rejected"
-                    }
-                    onClick={() =>
-                      acceptOrDeniedRequest(request._id, "rejected")
-                    }
-                    className="bg-gray-100 hover:bg-red-100 text-gray-700 px-5 py-2 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {requestAction.id === request._id &&
-                    requestAction.action === "rejected" ? (
-                      <>
-                        <LoaderCircle size={18} className="animate-spin" />
-                        Declining...
-                      </>
-                    ) : (
-                      <>
-                        <X size={18} />
-                        Decline
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -196,7 +196,11 @@ export default function ChatWindow({
         <div className="flex items-center gap-3">
           <div className="relative">
             <img
-              src={selectedFriendDetails?.profilePicture || "/dp.png"}
+              src={
+                selectedChat?.type === "friend"
+                  ? selectedFriendDetails?.profilePicture || "/dp.png"
+                  : "/groupDp.png"
+              }
               alt=""
               className="w-12 h-12 rounded-full object-cover"
             />
