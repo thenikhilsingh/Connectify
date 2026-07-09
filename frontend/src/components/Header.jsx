@@ -8,11 +8,17 @@ export default function Header() {
   const navigate = useNavigate();
   return (
     <header className="h-16 bg-white border-b px-6 flex items-center justify-between">
-      <input
-        type="text"
-        placeholder="Search users, posts..."
-        className="w-112.5 h-11 rounded-xl bg-gray-50 border px-4"
-      />
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Hello,
+          <span className="text-violet-600 ml-2">
+            {user?.firstName} {user?.lastName}
+          </span>
+          <span className="inline-block ml-2 origin-bottom-right animate-[wave_1.5s_ease-in-out_infinite]">
+            👋
+          </span>
+        </h1>
+      </div>
 
       <div className="flex items-center gap-4">
         <div

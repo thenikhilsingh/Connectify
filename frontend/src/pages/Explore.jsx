@@ -293,16 +293,6 @@ export default function Explore() {
       <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow p-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Explore</h1>
-          <div className="relative w-105">
-            <Search
-              size={18}
-              className="absolute left-4 top-3.5 text-gray-400"
-            />
-            <input
-              className="w-full border rounded-xl pl-11 py-3 pr-4"
-              placeholder="Search posts or people..."
-            />
-          </div>
         </div>
         <div className="flex gap-8 mt-8 border-b">
           {["Posts", "People"].map((t) => (
