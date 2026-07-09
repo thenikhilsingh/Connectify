@@ -91,4 +91,35 @@ const guestLogin = async (req, res) => {
   }
 };
 
-module.exports = { register, login, user, guestLogin };
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const loggedInUser = await User.findById(req.user._id);
+
+    const isMatch = await loggedInUser.comparePassword(currentPassword);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    loggedInUser.password = newPassword;
+
+    await loggedInUser.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Password change failed",
+    });
+  }
+};
+
+module.exports = { register, login, user, guestLogin, changePassword };

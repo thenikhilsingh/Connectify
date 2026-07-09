@@ -1,10 +1,54 @@
 import { useContext, useState } from "react";
 import { Lock, Bell, Shield, LogOut, Eye, EyeOff } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
+import useAxios from "../hooks/useAxios";
+import { useNavigate } from "react-router-dom";
 
 export default function Settings() {
-  const { user } = useContext(AuthContext);
-  const [showPassword, setShowPassword] = useState(false);
+  const api = useAxios();
+  const navigate = useNavigate();
+  const { user, LogoutUser } = useContext(AuthContext);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [payload, setPayload] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmNewPassword: "",
+  });
+
+  const handleChange = (e) => {
+    setPayload({ ...payload, [e.target.name]: e.target.value });
+  };
+
+  const finalPayload = {
+    currentPassword: payload.currentPassword,
+    newPassword: payload.newPassword,
+  };
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setChangingPassword(true);
+    try {
+      if (payload.newPassword != payload.confirmNewPassword) {
+        return alert("new password and confirm new password should be same!");
+      } else {
+        const response = await api.put(
+          "/api/auth/change-password",
+          finalPayload,
+        );
+        if (response.status === 200) {
+          alert("password changed successfully!");
+          setPayload({
+            currentPassword: "",
+            newPassword: "",
+            confirmNewPassword: "",
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setChangingPassword(false);
+    }
+  };
 
   return (
     <div className="bg-[#f5f7fb] min-h-screen p-6">
@@ -18,7 +62,10 @@ export default function Settings() {
         </div>
         {/* Change Password */}
 
-        <div className="bg-white border border-gray-200 rounded-3xl shadow-sm p-8 mb-8">
+        <form
+          onSubmit={handleChangePassword}
+          className="bg-white border border-gray-200 rounded-3xl shadow-sm p-8 mb-8"
+        >
           <div className="flex items-center gap-4 pb-6 border-b border-gray-100 mb-8">
             <div className="w-12 h-12 rounded-2xl bg-violet-100 flex items-center justify-center">
               <Lock className="text-violet-600" />
@@ -42,18 +89,13 @@ export default function Settings() {
 
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type="password"
                   placeholder="Enter current password"
                   className="w-full h-12 border border-gray-300 rounded-xl px-4 pr-12 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500"
+                  name="currentPassword"
+                  value={payload.currentPassword}
+                  onChange={handleChange}
                 />
-
-                {/* <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-0 -bottom-1 text-gray-500 hover:text-violet-600 transition"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button> */}
               </div>
             </div>
 
@@ -67,6 +109,9 @@ export default function Settings() {
                 type="password"
                 placeholder="Enter new password"
                 className="w-full h-12 border border-gray-300 rounded-xl px-4 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500"
+                name="newPassword"
+                value={payload.newPassword}
+                onChange={handleChange}
               />
             </div>
 
@@ -80,21 +125,25 @@ export default function Settings() {
                 type="password"
                 placeholder="Confirm new password"
                 className="w-full h-12 border border-gray-300 rounded-xl px-4 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500"
+                name="confirmNewPassword"
+                value={payload.confirmNewPassword}
+                onChange={handleChange}
               />
             </div>
 
             <button
-              disabled={user?.isGuest}
+              type="submit"
+              disabled={changingPassword || user?.isGuest}
               className={
                 user?.isGuest
                   ? "cursor-not-allowed mt-2 bg-violet-600 hover:bg-violet-700 text-white px-8 py-3 rounded-xl font-medium transition"
                   : "mt-2 bg-violet-600 hover:bg-violet-700 text-white px-8 py-3 rounded-xl font-medium transition"
               }
             >
-              Update Password
+              {changingPassword ? "Updating Password..." : "Update Password"}
             </button>
           </div>
-        </div>
+        </form>
 
         {/* Logout */}
 
@@ -114,7 +163,13 @@ export default function Settings() {
               </div>
             </div>
 
-            <button className="bg-red-500 hover:bg-red-600 transition text-white px-8 py-3 rounded-xl font-medium">
+            <button
+              onClick={() => {
+                LogoutUser();
+                navigate("/");
+              }}
+              className="bg-red-500 hover:bg-red-600 transition text-white px-8 py-3 rounded-xl font-medium"
+            >
               Logout
             </button>
           </div>

@@ -4,6 +4,7 @@ const {
   login,
   user,
   guestLogin,
+  changePassword,
 } = require("../controllers/authController");
 const {
   registerValidator,
@@ -17,5 +18,6 @@ authRouter.post("/signup", registerValidator, register);
 authRouter.post("/login", loginValidator, login);
 authRouter.get("/user", authMiddleware, user);
 authRouter.post("/guest", guestLogin);
+authRouter.put("/change-password", authMiddleware, changePassword);
 
 module.exports = authRouter;
