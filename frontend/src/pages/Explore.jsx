@@ -524,9 +524,8 @@ export default function Explore() {
                     <h3 className="text-center text-xl font-semibold mt-4">
                       {`${person?.firstName} ${person?.lastName}`}
                     </h3>
-                    <p className="text-center text-gray-500">{person?.bio}</p>
-                    <p className="text-center text-sm text-gray-400 mt-2">
-                      0 mutual friends
+                    <p className="text-center text-gray-500">
+                      {person?.bio || ""}
                     </p>
                     {renderButton(request, person._id)}
                   </div>

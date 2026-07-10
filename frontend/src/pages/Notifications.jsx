@@ -141,8 +141,6 @@ export default function Notifications() {
                         {`${request?.sender?.firstName} ${request?.sender?.lastName}`}
                       </h3>
 
-                      <p className="text-gray-500 text-sm">0 Mutual Friends</p>
-
                       <p className="text-xs text-gray-400 mt-1">
                         {request?.updatedAt &&
                           getRelativeTime(request.updatedAt)}

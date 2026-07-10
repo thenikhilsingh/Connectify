@@ -638,10 +638,6 @@ export default function Profile() {
                           {`${friend?.firstName} ${friend.lastName}`}
                         </h3>
 
-                        <p className="text-sm text-gray-500 mt-1">
-                          0 mutual friends
-                        </p>
-
                         <button
                           onClick={() => navigate(`/app/profile/${friend._id}`)}
                           className="w-full mt-4 bg-violet-100 text-violet-700 py-2 rounded-xl hover:bg-violet-200 transition"
